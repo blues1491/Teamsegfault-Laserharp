@@ -6,7 +6,9 @@
 #include <chrono>
 #include <unordered_map>
 
-//First do: sudo apt-get install libsfml-dev git build-essential
+// First do: sudo apt-get install libsfml-dev git build-essential
+// Then compile with: g++ sound_test.cpp -lsfml-audio -lsfml-system
+
 
 int main()
 {
