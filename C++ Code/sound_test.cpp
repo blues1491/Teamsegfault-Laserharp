@@ -6,6 +6,8 @@
 #include <chrono>
 #include <unordered_map>
 
+//First do: sudo apt-get install libsfml-dev git build-essential
+
 int main()
 {
     std::string folder = "Sound Samples/"; 
