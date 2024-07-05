@@ -47,9 +47,6 @@ int main()
             gpioRead(17);
         }
 
-        
-        
-        
         for(const auto& pair : laserToSoundMap)
         {
             sounds[pair.second].play();
