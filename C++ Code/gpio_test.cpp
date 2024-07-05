@@ -1,82 +1,59 @@
+#include "sysfs_gpio.h"
+#include <SFML/Audio.hpp>
 #include <iostream>
-#include <fstream>
+#include <vector>
 #include <string>
-#include <unistd.h>
+#include <thread>
+#include <chrono>
+#include <unordered_map>
 
-class GPIO {
-public:
-    GPIO(int pin) : pinNumber(pin) {
-        exportGPIO();
-        setDirection("in");
-    }
-
-    ~GPIO() {
-        unexportGPIO();
-    }
-
-    int readValue() {
-        std::string path = "/sys/class/gpio/gpio" + std::to_string(pinNumber) + "/value";
-        std::ifstream gpioValueFile(path);
-
-        if (!gpioValueFile.is_open()) {
-            std::cerr << "Failed to open GPIO value file: " << path << std::endl;
+int main()
+{
+    
+    std::string folder = "Sound Samples/"; 
+    std::vector<std::string> soundFiles = {"C3.wav", "D3.wav", "E3.wav", "F3.wav", "G3.wav", "A3.wav", "B3.wav", "C4.wav"}; 
+    std::vector<sf::SoundBuffer> buffers(soundFiles.size());
+    std::vector<sf::Sound> sounds(soundFiles.size());
+    
+    for (size_t i = 0; i < soundFiles.size(); ++i) 
+    {
+        std::string fullPath = folder + soundFiles[i];
+        if (!buffers[i].loadFromFile(fullPath)) 
+        {
+            std::cerr << "Error loading " << fullPath << std::endl;
             return -1;
         }
-
-        std::string value;
-        gpioValueFile >> value;
-        gpioValueFile.close();
-
-        return std::stoi(value);
+        sounds[i].setBuffer(buffers[i]);
     }
 
-private:
-    int pinNumber;
+    // Map laser inputs to sound indices
+    std::unordered_map<int, int> laserToSoundMap = 
+    {
+        {0, 0}, // Laser 0 -> C3
+        {1, 1}, // Laser 1 -> D3
+        {2, 2}, // Laser 2 -> E3
+        {3, 3}, // Laser 3 -> F3
+        {4, 4}, // Laser 4 -> G3
+        {5, 5}, // Laser 5 -> A3
+        {6, 6}, // Laser 6 -> B3
+        {7, 7}  // Laser 7 -> C4
+    };
 
-    void exportGPIO() {
-        std::ofstream exportFile("/sys/class/gpio/export");
-        if (!exportFile.is_open()) {
-            std::cerr << "Failed to open export file" << std::endl;
-            return;
-        }
-        exportFile << pinNumber;
-        exportFile.close();
-    }
-
-    void unexportGPIO() {
-        std::ofstream unexportFile("/sys/class/gpio/unexport");
-        if (!unexportFile.is_open()) {
-            std::cerr << "Failed to open unexport file" << std::endl;
-            return;
-        }
-        unexportFile << pinNumber;
-        unexportFile.close();
-    }
-
-    void setDirection(const std::string &direction) {
-        std::string path = "/sys/class/gpio/gpio" + std::to_string(pinNumber) + "/direction";
-        std::ofstream directionFile(path);
-
-        if (!directionFile.is_open()) {
-            std::cerr << "Failed to open direction file: " << path << std::endl;
-            return;
+    while(true)
+    {
+        bool on = 0;
+        while(on == 0)
+        {
+            gpioRead(17);
         }
 
-        directionFile << direction;
-        directionFile.close();
+        
+        
+        
+        for(const auto& pair : laserToSoundMap)
+        {
+            sounds[pair.second].play();
+            std::this_thread::sleep_for(std::chrono::milliseconds(250)); // Add delay between playing sounds
+        }
     }
-};
-
-int main() {
-    int gpioPin = 17; // Change this to the GPIO pin number you want to read
-
-    GPIO gpio(gpioPin);
-
-    while (true) {
-        int value = gpio.readValue();
-        std::cout << "GPIO " << gpioPin << " value: " << value << std::endl;
-        usleep(500000); // Sleep for 500 ms
-    }
-
-    return 0;
 }
