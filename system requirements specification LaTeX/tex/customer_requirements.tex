@@ -1,32 +1,94 @@
-Include a header paragraph specific to your product here. Customer requirements are those required features and functions specified for and by the intended audience for this product. This section establishes, clearly and concisely, the "look and feel" of the product, what each potential end-user should expect the product do and/or not do. Each requirement specified in this section is associated with a specific customer need that will be satisfied. In general Customer Requirements are the directly observable features and functions of the product that will be encountered by its users. Requirements specified in this section are created with, and must not be changed without, specific agreement of the intended customer/user/sponsor.
+This project aims to design and develop an innovative laser harp that serves as both an educational tool and a musical instrument. Customer requirements for this project are established to ensure the product meets the needs of its intended users, which include educational institutions, music enthusiasts, and hobbyists. These requirements outline the essential features and functionalities that the product must deliver to achieve user satisfaction and fulfill its purpose. Any changes to these requirements must be agreed upon by the project stakeholders, including the customer, sponsors, and the development team.
 
-\subsection{Requirement Name}
+\subsection{Laser String Detection}
 \subsubsection{Description}
-A detailed description of the feature/function that satisfies the requirement. For example: \textit{The GUI background will be slate blue. This specific color is required in order to ensure that the GUI matches other similar software products offered by the customer. Slate blue is specified as \#007FFF, using six-digit hexadecimal color specification.} It is acceptable and advisable to include drawings/graphics in the description if it aids understanding of the requirement.
+The laser harp must accurately detect when a laser string is interrupted (plucked) and identify which specific string was interrupted. This detection must be reliable under various lighting conditions to ensure consistent performance during use.
 \subsubsection{Source}
-The source of the requirement (e.g. customer, sponsor, specified team member (by name), federal regulation, local laws, CSE Senior Design project specifications, etc.)
+Customer, CSE Senior Design project specifications
 \subsubsection{Constraints}
-A detailed description of realistic constraints relevant to this requirement. Economic, environmental, social, political, ethical, health \& safety, manufacturability, and sustainability should be discussed as appropriate.
+Economic:: The solution should be cost-effective, using commercially available components.
+Environmental: Must operate reliably in indoor environments with variable lighting.
+Health & Safety: The lasers used must be safe for use around humans, adhering to Class 1 laser safety standards.
+Manufacturability: The system should be easy to assemble and maintain.
 \subsubsection{Standards}
-A detailed description of any specific standards that apply to this requirement (e.g. \textit{NSTM standard xx.xxx.x. color specifications \cite{Rubin2012}}. Standards exist for practically everything (ATC standard fuses, IEEE 802.15.4 embedded wireless, TLS 1.3 encryption, etc.), so be sure that you research and document which ones will be followed in meeting this requirement.
+IEC 60825-1:2014 Safety of Laser Products
+IEEE 802.3 for electronic components
 \subsubsection{Priority}
-The priority of this requirement relative to other specified requirements. Use the following priorities:
-\begin{itemize}
-\item Critical (must have or product is a failure)
-\item High (very important to customer acceptance, desirability)
-\item Moderate (should have for proper product functionality);
-\item Low (nice to have, will include if time/resource permits)
-\item Future (not feasible in this version of the product, but should be considered for a future release).
-\end{itemize}
+Critical
 
-\subsection{Requirement Name}
+
+\subsection{Audio Output}
 \subsubsection{Description}
-Detailed requirement description...
+The laser harp must produce a sound corresponding to the interrupted laser string. The sounds should be pre-recorded harp notes stored in .wav format and played through an audio output system. The system should support simultaneous playback of multiple notes to create chords.
 \subsubsection{Source}
-Source
+Customer, CSE Senior Design project specifications
 \subsubsection{Constraints}
-Detailed description of applicable constraints...
+Economic: Use cost-effective and safe rechargeable battery solutions.\\
+Environmental: Battery should be compliant with environmental regulations for disposal.\\
+Health \& Safety: Battery must meet safety standards to prevent overheating and other hazards.
 \subsubsection{Standards}
-List of applicable standards
+WAV File Format Specification
+OpenAL Standard for Audio Playback
 \subsubsection{Priority}
-Priority
+Critical
+
+
+\subsection{Portable}
+\subsubsection{Description}
+The laser harp must be portable, allowing it to be easily transported and set up in different locations. The device should be lightweight and compact without compromising functionality.
+\subsubsection{Source}
+specified team member (Simon Aguirre)
+\subsubsection{Constraints}
+Economic:: Materials used should balance cost and durability.
+Environmental: Device should withstand minor impacts and vibrations during transport.
+Health & Safety: Ensure safe handling and transport.
+\subsubsection{Standards}
+IEC 60068-2-31: Test for shock and bump for equipment
+\subsubsection{Priority}
+High
+
+
+\subsection{Power Supply}
+\subsubsection{Description}
+The laser harp must operate on a rechargeable battery with a minimum of 4 hours of continuous use per charge. It should also support operation while charging.
+\subsubsection{Source}
+specified team member (Matthew Moran)
+\subsubsection{Constraints}
+Economic: Use cost-effective and safe rechargeable battery solutions.
+Environmental: Battery should be compliant with environmental regulations for disposal.
+Health & Safety: Battery must meet safety standards to prevent overheating and other hazards.
+\subsubsection{Standards}
+IEC 62133-2:2017 for rechargeable battery safety
+\subsubsection{Priority}
+Moderate
+
+
+\subsection{User Interface}
+\subsubsection{Description}
+The laser harp must include a user interface (UI) that allows users to calibrate the laser strings, adjust volume, and select different sound profiles. The UI should be intuitive and accessible.
+\subsubsection{Source}
+specified team member (Matthew Moran)
+\subsubsection{Constraints}
+Economic: Development should utilize open-source UI frameworks.
+Environmental: Must be usable in typical classroom and home settings.
+Social: The UI design should be inclusive and accessible to users with different needs.
+\subsubsection{Standards}
+Web Content Accessibility Guidelines (WCAG) 2.1 for UI accessibility
+\subsubsection{Priority}
+Low
+
+
+\subsection{Wireless Connectivity}
+\subsubsection{Description}
+Future versions of the laser harp should include wireless connectivity options such as Bluetooth or Wi-Fi for remote control and updates.
+\subsubsection{Source}
+None
+\subsubsection{Constraints}
+Economic: Ensure cost-effective implementation of wireless modules.
+Environmental: Reliable operation in typical indoor environments.
+Health & Safety: Adhere to wireless communication safety standards.
+\subsubsection{Standards}
+IEEE 802.11 for Wi-Fi
+Bluetooth SIG standards for Bluetooth
+\subsubsection{Priority}
+Future

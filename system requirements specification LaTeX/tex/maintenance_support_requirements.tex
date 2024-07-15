@@ -1,13 +1,76 @@
-Include a header paragraph specific to your product here. Maintenance and support requirements address items specific to the ongoing maintenance and support of your product after delivery. Think of these requirements as if you were the ones who would be responsible for caring for customers/end user after the product is delivered in its final form and in use "in the field". What would you require to do this job? Specify items such as: where, how and who must be able to maintain the product to correct errors, hardware failures, etc.; required support/troubleshooting manuals/guides; availability/documentation of source code; related technical documentation that must be available for maintainers; specific/unique tools required for maintenance; specific software/environment required for maintenance; etc.
+The maintenance and support requirements for the laser harp project are designed to ensure that the product remains functional, reliable, and user-friendly after delivery. These requirements outline the necessary steps and resources for maintaining the product, correcting errors, and providing support to end users. The goal is to provide a clear plan for ongoing product care, including troubleshooting, repair, and updates. This involves defining who will be responsible for maintenance, the necessary tools and documentation, and the standards to be followed.
 
-\subsection{Requirement Name}
+
+\subsection{Source Code}
 \subsubsection{Description}
-Detailed requirement description...
+The source code for the laser harp's software must be made available to the maintenance team. This includes all code related to the operation of the laser detection, audio playback, and user interface components.
 \subsubsection{Source}
-Source
+Development Team
 \subsubsection{Constraints}
-Detailed description of applicable constraints...
+Economic:: Secure storage and version control systems must be maintained to manage the source code.
+Security: Access to the source code should be restricted to authorized personnel to prevent unauthorized changes or misuse.
+Documentation: The source code must be well-documented to ensure maintainers can understand and modify it as needed.
 \subsubsection{Standards}
-List of applicable standards
+IEEE 828: Configuration Management for Systems and Software Engineering.
 \subsubsection{Priority}
-Priority
+Critical
+
+
+\subsection{Maintenance Tools}
+\subsubsection{Description}
+Specific tools and equipment must be available for maintaining the laser harp. This includes standard electronic repair tools (soldering iron, multimeter, oscilloscope) as well as any specialized tools required for working with the laser and audio components.
+\subsubsection{Source}
+Development Team
+\subsubsection{Constraints}
+Economic:: Budget for the procurement and maintenance of necessary tools.
+Health & Safety: Ensure all maintenance tools meet safety standards to prevent accidents during use.
+Usability:: Tools should be user-friendly and suitable for the technical skills of the maintenance personnel.
+\subsubsection{Standards}
+OSHA Standards: Occupational Safety and Health Administration standards for tool safety.
+\subsubsection{Priority}
+High
+
+
+\subsection{Software and Environment Requirements}
+\subsubsection{Description}
+The maintenance of the laser harp's software requires specific development environments and libraries. This includes the programming languages used (e.g., C++, Python), development tools (e.g., Visual Studio Code), and audio libraries (e.g., SFML).
+\subsubsection{Source}
+Development Team
+\subsubsection{Constraints}
+Economic:: Ensure that all necessary software licenses are obtained and maintained.
+Technical:: The development environment must be compatible with the software components of the laser harp.
+Usability:: The environment should be configured to facilitate easy development, testing, and deployment of updates.
+\subsubsection{Standards}
+IEEE 14764: Software Engineering - Software Life Cycle Processes - Maintenance.
+\subsubsection{Priority}
+High
+
+
+\subsection{Maintenance Documentation}
+\subsubsection{Description}
+Comprehensive maintenance documentation must be provided to guide users and support personnel in troubleshooting and repairing the laser harp. This documentation should include user manuals, troubleshooting guides, repair procedures, and detailed diagrams of the system.
+\subsubsection{Source}
+Development Team
+\subsubsection{Constraints}
+Economic:: The creation and upkeep of detailed documentation must be budgeted for, including potential updates as the product evolves.
+Technical:: Documentation must be thorough and accessible, using clear language and visuals to aid understanding.
+Usability:: Documentation should be designed to be user-friendly, ensuring that users of varying technical skill levels can effectively use and maintain the product.
+\subsubsection{Standards}
+ISO/IEC 26514: Systems and software engineering — Requirements for designers and developers of user documentation.
+\subsubsection{Priority}
+Moderate
+
+
+\subsection{Technical Support}
+\subsubsection{Description}
+A dedicated support team must be available to provide technical assistance to users. This team should be trained in the operation and maintenance of the laser harp and capable of addressing common issues.
+\subsubsection{Source}
+Customer, Development Team
+\subsubsection{Constraints}
+Economic:: Budget for hiring and training support personnel.
+Technical:: Support personnel must have a deep understanding of the laser harp's components and software.
+Usability:: Support services should be easily accessible to users, with multiple contact methods available (e.g., phone, email, online chat).
+\subsubsection{Standards}
+ISO 20000: Information technology — Service management.
+\subsubsection{Priority}
+Low/Future

@@ -1,13 +1,85 @@
-Include a header paragraph specific to your product here. Performance requirements address items such as: how fast specific critical operations must complete; how long it takes to start/stop activities; how long the battery must last; maximum time it must take to set up; etc.
+The performance requirements for the laser harp project address critical aspects such as the speed of specific operations, startup and shutdown times, battery life, and setup time. These requirements ensure the product meets the necessary performance standards to provide a satisfactory user experience.
 
-\subsection{Requirement Name}
+\subsection{Real-time Sound Playback}
 \subsubsection{Description}
-Detailed requirement description...
+The laser harp must produce sound within 50 milliseconds of a laser string being interrupted. This ensures a responsive and real-time playing experience for the user.
 \subsubsection{Source}
-Source
+Customer, Development Team
 \subsubsection{Constraints}
-Detailed description of applicable constraints...
+Technical: The system must have low-latency processing capabilities to ensure immediate sound playback.\\
+Economic: Use of efficient processing hardware to balance performance and cost.
 \subsubsection{Standards}
-List of applicable standards
+MIDI Standard Musical Instrument Digital Interface for real-time performance.
 \subsubsection{Priority}
-Priority
+Critical
+
+
+\subsection{Battery Life}
+\subsubsection{Description}
+The laser harp must have a battery life of at least 4 hours of continuous use. It should also support operation while charging.
+\subsubsection{Source}
+Customer, Sponsor
+\subsubsection{Constraints}
+Economic: Use of cost-effective, high-capacity batteries.
+Environmental: Batteries must be compliant with environmental regulations for disposal.\\
+Health & Safety: Battery must meet safety standards to prevent overheating and other hazards.
+\subsubsection{Standards}
+IEC 62133-2:2017 Safety requirements for portable sealed secondary cells and batteries.
+\subsubsection{Priority}
+Moderate
+
+
+\subsection{Startup Time}
+\subsubsection{Description}
+The laser harp must be ready for use within 30 seconds of being powered on. This includes system initialization and calibration of the laser strings.
+\subsubsection{Source}
+Customer, Sponsor
+\subsubsection{Constraints}
+Technical: Efficient boot and initialization processes must be implemented.\\
+Economic: Optimize hardware and software to reduce startup time without significant cost increases.
+\subsubsection{Standards}
+ISO/IEC 24748-4 Systems and software engineering - Life cycle management - Part 4: System and software test and evaluation.
+\subsubsection{Priority}
+Moderate
+
+
+\subsection{Sound Quality}
+\subsubsection{Description}
+The sound produced by the laser harp must have a sample rate of at least 44.1 kHz and a bit depth of 16 bits to ensure high-quality audio output.
+\subsubsection{Source}
+Customer, Development Team
+\subsubsection{Constraints}
+Technical: Use of high-quality audio libraries and components to meet sound quality requirements.\\
+Economic: Balance between cost and audio quality components.
+\subsubsection{Standards}
+IEC 60958 Digital audio interface - Consumer and professional equipment.
+\subsubsection{Priority}
+Moderate
+
+
+\subsection{Calibration Accuracy}
+\subsubsection{Description}
+The calibration process for the laser strings must achieve an accuracy of within 1 millimeter to ensure precise detection of string interruptions.
+\subsubsection{Source}
+Customer, Sponsor
+\subsubsection{Constraints}
+Technical: High-precision sensors and calibration algorithms must be used.\\
+Economic: Ensure affordability of high-precision components.
+\subsubsection{Standards}
+ISO 9283 Manipulating industrial robots - Performance criteria and related test methods.
+\subsubsection{Priority}
+Moderate
+
+
+\subsection{Setup Time}
+\subsubsection{Description}
+The laser harp must be fully set up and operational within 30 minutes. This includes assembly of all components and initial configuration.
+\subsubsection{Source}
+Customer, Development Team
+\subsubsection{Constraints}
+Economic: Components should be designed for easy and quick assembly.\\
+Usability: Instructions must be clear and easy to follow to ensure quick setup.
+\subsubsection{Standards}
+ISO 9241-11 Ergonomics of human-system interaction – Part 11: Usability: Definitions and concepts.
+\subsubsection{Priority}
+Low
