@@ -7,6 +7,9 @@
 #include <unordered_map>
 #include <unistd.h>
 
+//compile with: g++ -Wall -g Main.cpp sysfs_gpio.c -lsfml-audio -lsfml-system -lpthread -o Main
+//run with: sudo ./Main
+
 using namespace std;
 
 void monitorGPIO(int gpio_pin, const std::string& sound_file, const std::string& folder)
