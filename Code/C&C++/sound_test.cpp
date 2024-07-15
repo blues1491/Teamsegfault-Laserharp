@@ -1,4 +1,3 @@
-#include "sysfs_gpio.h"
 #include <SFML/Audio.hpp>
 #include <iostream>
 #include <vector>
@@ -7,11 +6,15 @@
 #include <chrono>
 #include <unordered_map>
 
+// First do: sudo apt-get install libsfml-dev git build-essential
+// Then compile with: g++ sound_test.cpp -lsfml-audio -lsfml-system
+
+
 int main()
 {
-    
-    std::string folder = "Sound Samples/"; 
+    std::string folder = "../Sound Samples/"; 
     std::vector<std::string> soundFiles = {"C3.wav", "D3.wav", "E3.wav", "F3.wav", "G3.wav", "A3.wav", "B3.wav", "C4.wav"}; 
+    
     std::vector<sf::SoundBuffer> buffers(soundFiles.size());
     std::vector<sf::Sound> sounds(soundFiles.size());
     
@@ -38,19 +41,13 @@ int main()
         {6, 6}, // Laser 6 -> B3
         {7, 7}  // Laser 7 -> C4
     };
-
-    while(true)
+    
+    for(const auto& pair : laserToSoundMap)
     {
-        bool on = 0;
-        while(on == 0)
-        {
-            gpioRead(17);
-        }
-
-        for(const auto& pair : laserToSoundMap)
-        {
-            sounds[pair.second].play();
-            std::this_thread::sleep_for(std::chrono::milliseconds(250)); // Add delay between playing sounds
-        }
+        sounds[pair.second].play();
+        std::this_thread::sleep_for(std::chrono::milliseconds(500)); // Add delay between playing sounds
     }
+
+    // Keep the program running to allow all sounds to finish playing
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 }
