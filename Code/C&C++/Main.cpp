@@ -55,8 +55,13 @@ int main()
 {
     std::string folder = "../Sound Samples/";
     std::unordered_map<int, std::string> gpio_to_sound = {
-        {17, "C3.wav"},
-        {27, "E3.wav"}
+        {21, "C3.wav"},
+        {20, "D3.wav"},
+        {16, "E3.wav"},
+        {12, "F3.wav"},
+        {25, "G3.wav"},
+        {24, "A3.wav"},
+        {23, "B3.wav"}
     };
 
     std::vector<std::thread> threads;
