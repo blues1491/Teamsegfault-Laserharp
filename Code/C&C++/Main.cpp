@@ -7,8 +7,8 @@
 #include <unistd.h>
 #include <pigpio.h>
 
-//compile with: g++ -Wall -g Main.cpp -lsfml-audio -lsfml-system -lpthread -o Main
-//run with: sudo ./Main
+//compile with: g++ -Wall -g Main.cpp -lpigpio -lrt -pthread -lsfml-audio -lsfml-system
+//run with: sudo ./a.out
 
 using namespace std;
 
