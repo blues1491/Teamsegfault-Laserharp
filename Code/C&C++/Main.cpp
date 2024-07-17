@@ -1,4 +1,3 @@
-#include "sysfs_gpio.h"
 #include <SFML/Audio.hpp>
 #include <iostream>
 #include <thread>
@@ -6,8 +5,9 @@
 #include <string>
 #include <unordered_map>
 #include <unistd.h>
+#include <pigpio.h>
 
-//compile with: g++ -Wall -g Main.cpp sysfs_gpio.c -lsfml-audio -lsfml-system -lpthread -o Main
+//compile with: g++ -Wall -g Main.cpp -lsfml-audio -lsfml-system -lpthread -o Main
 //run with: sudo ./Main
 
 using namespace std;
@@ -15,7 +15,7 @@ using namespace std;
 void monitorGPIO(int gpio_pin, const std::string& sound_file, const std::string& folder)
 {
     // Export the GPIO pin and set direction to input
-    gpioInput(gpio_pin);
+    gpioSetMode(gpio_pin, PI_INPUT);
 
     // Load the sound file
     sf::SoundBuffer buffer;
@@ -63,6 +63,13 @@ int main()
         {24, "A3.wav"},
         {23, "B3.wav"}
     };
+    
+    if (gpioInitialise() < 0) 
+    {
+        std::cerr << "GPIO initialization failed." << std::endl;
+        return 1; // Exit if initialization fails
+    }
+
 
     std::vector<std::thread> threads;
 
@@ -75,6 +82,8 @@ int main()
     {
         t.join();
     }
+    
+    gpioTerminate();
 
     return 0;
 }
