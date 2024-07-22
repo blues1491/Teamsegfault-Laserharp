@@ -7,8 +7,9 @@
 #include <unistd.h>
 #include <pigpio.h>
 
-//compile with: g++ -Wall -g Main.cpp -lpigpio -lrt -pthread -lsfml-audio -lsfml-system
-//run with: sudo ./a.out
+// Install SFML with: sudo apt-get install libsfml-dev git build-essential
+// Compile with: g++ -Wall -g -o Main.cpp -lpigpio -lrt -pthread -lsfml-audio -lsfml-system Main
+//run with: sudo ./Main
 
 using namespace std;
 
@@ -53,7 +54,7 @@ void monitorGPIO(int gpio_pin, const std::string& sound_file, const std::string&
 
 int main()
 {
-    std::string folder = "../Sound Samples/";
+    std::string folder = "Sound Samples/";
     std::unordered_map<int, std::string> gpio_to_sound = {
         {21, "C3.wav"},
         {20, "D3.wav"},
