@@ -9,16 +9,12 @@
 
 // Install SFML with: sudo apt-get install libsfml-dev git build-essential
 // Compile with: g++ -Wall -g -o Main.cpp -lpigpio -lrt -pthread -lsfml-audio -lsfml-system Main
-//run with: sudo ./Main
-
-using namespace std;
+// Run with: sudo ./Main
 
 void monitorGPIO(int gpio_pin, const std::string& sound_file, const std::string& folder)
 {
-    // Export the GPIO pin and set direction to input
     gpioSetMode(gpio_pin, PI_INPUT);
 
-    // Load the sound file
     sf::SoundBuffer buffer;
     if (!buffer.loadFromFile(folder + sound_file))
     {
@@ -38,17 +34,16 @@ void monitorGPIO(int gpio_pin, const std::string& sound_file, const std::string&
             return;
         }
 
-        if (value == 0)
+        if (value == 0) // 0 = reading input from laser
         {
             sound.play();
             while (sound.getStatus() == sf::Sound::Playing)
             {
-                // Keep the program running to allow the sound to finish playing
-                usleep(100000); // Sleep for 100 ms
+                usleep(50000); // Sleep for 50 ms while sound plays
             }
         }
 
-        usleep(10000); // Sleep for 500 ms before reading again
+        usleep(10000); // Sleep for 100 ms before reading again
     }
 }
 
@@ -68,21 +63,17 @@ int main()
     if (gpioInitialise() < 0) 
     {
         std::cerr << "GPIO initialization failed." << std::endl;
-        return 1; // Exit if initialization fails
+        return 1;
     }
 
 
     std::vector<std::thread> threads;
 
     for (const auto& entry : gpio_to_sound)
-    {
         threads.emplace_back(monitorGPIO, entry.first, entry.second, folder);
-    }
 
     for (auto& t : threads)
-    {
         t.join();
-    }
     
     gpioTerminate();
 
