@@ -1,22 +1,30 @@
-In this section, the layer is described in some detail in terms of its specific subsystems. Describe each of the layers and its subsystems in a separate chapter/major subsection of this document. The content of each subsystem description should be similar. Include in this section any special considerations and/or trade-offs considered for the approach you have chosen.
-
-\subsection{Subsystem 1}
-This section should be a general description of a particular subsystem for the given layer. For most subsystems, an extract of the architectural block diagram with data flows is useful. This should consist of the subsystem being described and those subsystems with which it communicates.
-
+This section describes the Control Unit layer, responsible for processing input data, managing system logic, and generating output signals.
 \begin{figure}[h!]
 	\centering
  	\includegraphics[width=0.60\textwidth]{images/ControlUnitSubsystem}
  \caption{Example subsystem description diagram}
 \end{figure}
+\subsection{Sound setting}
+This section describes the Control Unit layer, responsible for processing input data, managing system logic, and generating output signals.
+
 
 \subsubsection{Assumptions}
-Any assumptions made in the definition of the subsystem should be listed and described. Pay particular attention to assumptions concerning interfaces and interactions with other layers.
+The Sound Settings subsystem receives digital signals from the UserSettings and the Sound Settings subsystem is responsible for managing and applying the sound settings based on user input.
 
 \subsubsection{Responsibilities}
-Each of the responsibilities/features/functions/services of the subsystem as identified in the architectural summary must be expanded to more detailed responsibilities. These responsibilities form the basis for the identification of the finer-grained responsibilities of the layer's internal subsystems. Clearly describe what each subsystem does.
+\begin{itemize}
+\begin{item}
+Receive digital signals from the UserSettings subsystem representing the user's desired sound settings.
+\end{item}
+\begin{item}
+Process and store the received sound settings. 
+\end{item}
+\begin{item}
+Generate digital signals representing the selected sound settings to the Sound Multiplexer subsystem 
+\end{item}
+\end{itemize}
 
 \subsubsection{Subsystem Interfaces}
-Each of the inputs and outputs for the subsystem are defined here. Create a table with an entry for each labelled interface that connects to this subsystem. For each entry, describe any incoming and outgoing data elements will pass through this interface.
 
 \begin {table}[H]
 \caption {Subsystem interfaces} 
@@ -24,14 +32,77 @@ Each of the inputs and outputs for the subsystem are defined here. Create a tabl
     \begin{tabular}{ | p{1cm} | p{6cm} | p{3cm} | p{3cm} |}
     \hline
     ID & Description & Inputs & Outputs \\ \hline
-    \#xx & Description of the interface/bus & \pbox{3cm}{input 1 \\ input 2} & \pbox{3cm}{output 1}  \\ \hline
-    \#xx & Description of the interface/bus & \pbox{3cm}{N/A} & \pbox{3cm}{output 1}  \\ \hline
+    \#1 & Receive digital signal from the UserSetting  & \pbox{3cm}{ \\ User settings and input } & \pbox{3cm}{User setting}  \\ \hline
+ 
     \end{tabular}
 \end{center}
 \end{table}
 
-\subsection{Subsystem 2}
-Repeat for each subsystem
+\subsection{UserSettings}
+The UserSettings subsystem is connected to the Sound Settings and the Sound Multiplexer subsystem
+\subsubsection{Assumptions}
+\begin{itemize}
+\begin{item}
+The UserSettings subsystem receives digital signals from the Sound Settings subsystem 
+\end{item}
+\begin{item}
+The UserSettings subsystem can receive user input from the Input Layer subsystems
+\end{item}
+\begin{item}
+The UserSettings subsystem is responsible for managing and updating the user's settings
+\end{item}
+\end{itemize}
+\subsubsection{Responsibilities}
+\begin{itemize}
+\begin{item}
+Receive user input from the Input Layer subsystems.
+\end{item}
+\begin{item}
+Process and validate user input.
+\end{item}
+\begin{item}
+Update the user's settings based on the validated input.
+\end{item}
+\begin{item}
+Send digital signals representing the user's settings to the Sound Settings subsystem
+\end{item}
+\end{itemize}
 
-\subsection{Subsystem 3}
-Repeat for each subsystem
+\subsubsection{Subsystem Interfaces}
+\begin {table}[H]
+\caption {Subsystem interfaces} 
+\begin{center}
+    \begin{tabular}{ | p{1cm} | p{6cm} | p{3cm} | p{3cm} |}
+    \hline
+    ID & Description & Inputs & Outputs \\ \hline
+    \#1 & Receives digital signals from the Sound Settings & \pbox{3cm}{ \\ Digital signals representing sound settings } & \pbox{3cm}{Touchscreen}  \\ \hline
+    
+    \end{tabular}
+\end{center}
+\end{table}
+\subsection{Sound multiplexer}
+The Sound Multiplexer subsystem is connected to the Sound Settings subsystem and the Output Layer
+\subsubsection{ASSUMPTIONS}
+\begin{itemize}
+\begin{item}
+The Sound Multiplexer subsystem receives digital signals from the Sound Settings subsystem 
+\end{item}
+\begin{item}
+The Sound Multiplexer subsystem can select and output the appropriate sound based on the received settings.
+\end{item}
+\begin{item}
+The Sound Multiplexer subsystem is responsible for managing and outputting the final sound signal.
+\end{item}
+\end{itemize}
+\subsubsection{SUBSYSTEM INTERFACES}
+\begin {table}[H]
+\caption {Subsystem interfaces} 
+\begin{center}
+    \begin{tabular}{ | p{1cm} | p{6cm} | p{3cm} | p{3cm} |}
+    \hline
+    ID & Description & Inputs & Outputs \\ \hline
+    \#1 & Representing the desired sound settings from the Sound Settings subsystem & \pbox{3cm}{ \\ User settings and input } & \pbox{3cm}{Speaker}  \\ \hline
+  
+    \end{tabular}
+\end{center}
+\end{table}
