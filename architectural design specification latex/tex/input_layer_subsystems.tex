@@ -1,37 +1,128 @@
-In this section, the layer is described in some detail in terms of its specific subsystems. Describe each of the layers and its subsystems in a separate chapter/major subsection of this document. The content of each subsystem description should be similar. Include in this section any special considerations and/or trade-offs considered for the approach you have chosen.
+The input layer is a layer that allows users of the harp to interact with the hardware itself so it may play noises or change the corresponding noises that may play while displaying a visual on the touch screen
 
-\subsection{Subsystem 1}
-This section should be a general description of a particular subsystem for the given layer. For most subsystems, an extract of the architectural block diagram with data flows is useful. This should consist of the subsystem being described and those subsystems with which it communicates.
+\subsection{Laser Diodes Subsystem}
+The laser Diode subsystem is a hardware component in which the user can interact with the lasers, when the lasers are interacted with the software will decide what laser has been interacted with and create a noise through the sound multiplexer
+
 
 \begin{figure}[h!]
 	\centering
  	\includegraphics[width=0.60\textwidth]{images/InputSubsystem}
- \caption{Example subsystem description diagram}
+ \caption{Laser Diodes Subsystem}
 \end{figure}
 
 \subsubsection{Assumptions}
-Any assumptions made in the definition of the subsystem should be listed and described. Pay particular attention to assumptions concerning interfaces and interactions with other layers.
+It is assumed that the laser system will be used in a proper way by breaking the contact of the laser diode and photo transistor
 
 \subsubsection{Responsibilities}
-Each of the responsibilities/features/functions/services of the subsystem as identified in the architectural summary must be expanded to more detailed responsibilities. These responsibilities form the basis for the identification of the finer-grained responsibilities of the layer's internal subsystems. Clearly describe what each subsystem does.
+Interacted by the user in order to interact with the control unit subsection in order to make noise
+
 
 \subsubsection{Subsystem Interfaces}
-Each of the inputs and outputs for the subsystem are defined here. Create a table with an entry for each labelled interface that connects to this subsystem. For each entry, describe any incoming and outgoing data elements will pass through this interface.
 
 \begin {table}[H]
 \caption {Subsystem interfaces} 
 \begin{center}
-    \begin{tabular}{ | p{1cm} | p{6cm} | p{3cm} | p{3cm} |}
+    \begin{tabular}{|  p{1cm}  |p{6cm}  |p{3cm}  |p{3cm} |}
     \hline
     ID & Description & Inputs & Outputs \\ \hline
-    \#xx & Description of the interface/bus & \pbox{3cm}{input 1 \\ input 2} & \pbox{3cm}{output 1}  \\ \hline
-    \#xx & Description of the interface/bus & \pbox{3cm}{N/A} & \pbox{3cm}{output 1}  \\ \hline
+    \#1& Powers a Laser Diode wich can be interacted with& User Input& \pbox{3cm}{Sound Multiplexer}\\\hline
     \end{tabular}
 \end{center}
 \end{table}
 
-\subsection{Subsystem 2}
-Repeat for each subsystem
 
-\subsection{Subsystem 3}
-Repeat for each subsystem
+
+
+\subsection{Dials Subsystem}
+The Dials are a subsystem which interacts with the Control unit in order to change octaves are instruments which can be selected
+
+
+\begin{figure}[h!]
+	\centering
+ 	\includegraphics[width=0.60\textwidth]{images/InputSubsystem}
+ \caption{Dials}
+\end{figure}
+
+\subsubsection{Assumptions}
+ Dials should be rotated in a horizontal movement in order for the system to register input
+
+
+\subsubsection{Responsibilities}
+Dials will be used to control the sound setting which can be used to turn up or turn down the sound of the harp through the speakers
+
+\subsubsection{Subsystem Interfaces}
+
+\begin {table}[H]
+\caption {Subsystem interfaces} 
+\begin{center}
+    \begin{tabular}{|  p{1cm}  |p{6cm}  |p{3cm}  |p{3cm} |}
+    \hline
+    ID & Description & Inputs & Outputs \\ \hline
+    \#1& Used to adjust the sound setting & Human input& \pbox{3cm}{Speaker}\\\hline
+    \end{tabular}
+\end{center}
+\end{table}
+
+
+
+\subsection{Buttons Subsystem}
+Buttons are used to change octaves or interact with different areas of the control unit.
+
+\begin{figure}[h!]
+	\centering
+ 	\includegraphics[width=0.60\textwidth]{images/InputSubsystem}
+ \caption{Buttons}
+\end{figure}
+
+\subsubsection{Assumptions}
+A assumption to be made for the buttons is that they are used as a alternative way as a input for the control unit
+
+
+\subsubsection{Responsibilities}
+The responsibility of the button is to control the sound settings and interact with the sound settings such as lowering the volume and the user settings such as changing octave or instruments 
+
+
+\subsubsection{Subsystem Interfaces}
+
+\begin {table}[H]
+\caption {Subsystem interfaces} 
+\begin{center}
+    \begin{tabular}{|  p{1cm}  |p{6cm}  |p{3cm}  |p{4cm}|}
+    \hline
+    ID & Description & Inputs & Outputs \\ \hline
+    \#1& Round buttons which may be pressed in order to change sound levels or instruments& User input&       Sound Settings and user Settings\\\hline
+    \end{tabular}
+\end{center}
+\end{table}
+
+\subsection{Touchscreen Subsystem}
+The touchscreen is used for visual display and to display certain elements of settings to the user, the touchscreen can be used as a alternative way to interact with the control unit
+
+
+\begin{figure}[h!]
+	\centering
+ 	\includegraphics[width=0.60\textwidth]{images/InputSubsystem}
+ \caption{Touchscreen}
+\end{figure}
+
+\subsubsection{Assumptions}
+The touchscreen should be used as the primary way to interact with the control unit
+
+
+\subsubsection{Responsibilities}
+The touch screen main responsibility is to function as a visual output and as a way to interact with the OS and program which will have the user settings and sound settings
+
+
+\subsubsection{Subsystem Interfaces}
+
+\begin {table}[H]
+\caption {Subsystem interfaces} 
+\begin{center}
+    \begin{tabular}{|  p{1cm}  |p{6cm}  |p{3cm}  |p{3cm} |}
+    \hline
+    ID & Description & Inputs & Outputs \\ \hline
+    \#1& Takes input from the user by pressing on the screen also displays visuals& User input& \pbox{3cm}{UserSettings}\pbox{3cm}{Sound Settings}\\\hline
+    \end{tabular}
+\end{center}
+\end{table}
+
