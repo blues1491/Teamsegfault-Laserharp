@@ -1,16 +1,19 @@
-This section should describe the overall structure of your software system. Think of it as the strategy for how you will build the system. An architectural "layer" is the top-level logical view, or an abstraction, of your design. Layers should be composed of related elements of similar capabilities, and should be highly independent of other layers, but should have very clearly defined interfaces and interactions with other layers. Each layer should be identified individually and should be unique as to its function and purpose within the system. This section should also contain the high-level block diagram of the layers, as shown in the example below, as well as detailed descriptions of the functions of each layer.
+This section describes the overall structure of the laser harp software system. The architecture is designed in layers, with each layer comprising related elements of similar capabilities. These layers are highly independent of each other but have clearly defined interfaces and interactions. Each layer is identified individually and is unique in its function and purpose within the system. The high-level block diagram below illustrates the architectural layers and their interactions.
 
 \begin{figure}[h!]
-	\centering
- 	\includegraphics[width=0.60\textwidth]{images/Layers}
- \caption{A simple architectural layer diagram}
+\centering
+\includegraphics[width=0.60\textwidth]{images/Layers}
+\caption{A simple architectural layer diagram}
 \end{figure}
 
 \subsection{Input Layer Description}
-Each layer should be described separately in detail. Descriptions should include the features, functions, critical interfaces and interactions of the layer. The description should clearly define the services that the layer provides. Also include any conventions that your team will use in describing the structure: naming conventions for layers, subsystems, modules, and data flows; interface specifications; how layers and subsystems are defined; etc. 
+
+The input layer allows users to interact with the laser harp hardware, triggering sounds and changing settings via various input mechanisms such as laser diodes, dials, buttons, and a touchscreen. This layer captures user actions and sends corresponding signals to the control unit.
 
 \subsection{Control Unit Layer Description}
-Each layer should be described separately in detail. Descriptions should include the features, functions, critical interfaces and interactions of the layer. The description should clearly define the services that the layer provides. Also include any conventions that your team will use in describing the structure: naming conventions for layers, subsystems, modules, and data flows; interface specifications; how layers and subsystems are defined; etc. 
+
+The control unit layer processes input data, manages system logic, and generates output signals. It interprets signals from the input layer and translates them into commands for the output layer. This layer is responsible for managing sound settings, user settings, and coordinating the overall functionality of the laser harp.
 
 \subsection{Output Layer Description}
-Each layer should be described separately in detail. Descriptions should include the features, functions, critical interfaces and interactions of the layer. The description should clearly define the services that the layer provides. Also include any conventions that your team will use in describing the structure: naming conventions for layers, subsystems, modules, and data flows; interface specifications; how layers and subsystems are defined; etc. 
+
+The output layer is responsible for providing feedback to the user through visual and audio channels. This includes producing the appropriate sounds based on user input and displaying relevant information on the touchscreen. The output layer ensures that the laser harp's responses are immediate and accurately reflect user interactions

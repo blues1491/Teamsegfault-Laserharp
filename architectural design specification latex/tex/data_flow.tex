@@ -1,5 +1,12 @@
-This section breaks down your layer abstraction to another level of detail. Here you grapically represent the logical subsytems that compose each layer and show the interactions/interfaces between those subsystems. A subsystem can be thought of as a programming unit that implements one of the major functions of the layer. It, therefore, has data elements that serve as source/sinks for other subsystems. The logical data elements that flow between subsystems need to be explicitly defined at this point, beginning with a data flow-like diagram based on the block diagram.
+This section breaks down the layer abstraction into another level of detail, graphically representing the logical subsystems that compose each layer and showing the interactions/interfaces between those subsystems. Each subsystem is a programming unit that implements one of the major functions of the layer, with data elements that serve as sources or sinks for other subsystems.
 
+The input layer includes subsystems such as the Laser Diodes Subsystem, Dials Subsystem, Buttons Subsystem, and Touchscreen Subsystem. These subsystems capture various forms of user input and send corresponding signals to the control unit layer.
+
+The control unit layer comprises subsystems like the Sound Settings, User Settings, and Sound Multiplexer. These subsystems process input data, manage system logic, and generate output signals. They interpret the input signals and translate them into commands for the output layer.
+
+The output layer includes the Speaker Subsystem and Touchscreen Subsystem. These subsystems provide feedback to the user through audio and visual channels. The Speaker Subsystem converts digital signals into audible sound, while the Touchscreen Subsystem displays relevant information to the user.
+
+The interactions between these subsystems are represented in the following data flow diagram, which outlines the logical data elements that flow between them. Each arrow in the diagram indicates the direction of data flow, showing how data is passed from one subsystem to another.
 \begin{figure}[h!]
 	\centering
  	\includegraphics[width=\textwidth]{images/Subsystem}
