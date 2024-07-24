@@ -1,1 +1,30 @@
-Your introduction should describe your product concept in sufficient detail that the architectural design will be easy to follow. The introduction may include information used in the first sections of your SRS for this purpose. At a minimum, ensure that the product concept, scope and key requirements are described.
+The laser harp is a novel musical instrument that utilizes laser beams to simulate the strings of a traditional harp. By interrupting these laser beams, users can produce corresponding musical notes, creating an engaging and interactive experience. This product is designed to be both educational and entertaining, aiming to inspire interest in STEM fields while providing a unique musical platform for enthusiasts and musicians.
+
+\section{Product Concept}
+
+The laser harp operates by projecting laser beams vertically from an array of laser emitters placed at the base. These beams are aligned with corresponding phototransistors positioned above, which detect the presence or absence of the laser light. When a user interrupts a laser beam by placing their hand in its path, the phototransistor detects the interruption and sends a signal to a microcontroller or a Raspberry Pi. The microcontroller processes this signal and triggers the playback of a pre-recorded musical note corresponding to the interrupted beam.
+
+\section{Scope}
+
+The scope of the laser harp project includes the design, development, and testing of a functional prototype that can demonstrate the key features and capabilities of the product. The project encompasses the following components:
+\begin{itemize}
+    \item \textbf{Laser and Phototransistor Array:} A set of laser emitters and phototransistors to detect beam interruptions.
+    \item \textbf{Microcontroller/Raspberry Pi:} A processing unit to handle input signals from the phototransistors and control the audio output.
+    \item \textbf{Audio System:} Speakers or an audio output interface to play the corresponding musical notes.
+    \item \textbf{User Interface:} A simple and intuitive interface for calibration, instrument selection, pitch adjustment, octave control, and volume control.
+    \item \textbf{Power Supply:} A reliable power source to ensure continuous operation of the laser harp.
+\end{itemize}
+
+\section{Key Requirements}
+
+\begin{itemize}
+    \item \textbf{Real-time Sound Playback:} The system must produce sound immediately upon the interruption of a laser beam, ensuring a responsive playing experience.
+    \item \textbf{Multi-note Capability:} The laser harp should support the simultaneous interruption of multiple laser beams, allowing users to create chords.
+    \item \textbf{User Interface:} A user-friendly interface for controlling various parameters such as instrument selection, pitch, octave, and volume.
+    \item \textbf{Portability:} The device should be lightweight and easy to transport, making it suitable for demonstrations and performances in different locations.
+    \item \textbf{Safety:} The lasers used must be Class 1 to ensure user safety, with no risk of direct eye exposure.
+    \item \textbf{Power Supply:} The system should be powered by a reliable source, such as a rechargeable battery or an external power adapter, to ensure uninterrupted operation.
+    \item \textbf{Durability:} The construction of the laser harp should be robust enough to withstand regular use and transportation.
+\end{itemize}
+
+By addressing these key requirements, the architectural design of the laser harp will focus on creating a functional, safe, and user-friendly musical instrument that can be used for both educational purposes and entertainment. The following sections will detail the specific design components, their interactions, and the overall system architecture to achieve the desired functionality and performance.
