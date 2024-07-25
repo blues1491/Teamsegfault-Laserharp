@@ -1,8 +1,8 @@
 This section describes the Control Unit layer, responsible for processing input data, managing system logic, and generating output signals.
 \begin{figure}[h!]
 	\centering
- 	\includegraphics[width=0.60\textwidth]{images/ControlUnitSubsystem}
- \caption{Example subsystem description diagram}
+ 	\includegraphics[width=0.60\textwidth]{images/SoundSettings.png}
+ \caption{Sound Settings subsystem description diagram}
 \end{figure}
 \subsection{Sound setting}
 This section describes the Control Unit layer, responsible for processing input data, managing system logic, and generating output signals.
@@ -40,6 +40,13 @@ Generate digital signals representing the selected sound settings to the Sound M
 
 \subsection{UserSettings}
 The UserSettings subsystem is connected to the Sound Settings and the Sound Multiplexer subsystem
+\begin{figure}[h!]
+	\centering
+ 	\includegraphics[width=0.60\textwidth]{images/UserSettings}
+ \caption{User Settings subsystem description diagram}
+\end{figure}
+
+
 \subsubsection{Assumptions}
 \begin{itemize}
 \begin{item}
@@ -82,6 +89,13 @@ Send digital signals representing the user's settings to the Sound Settings subs
 \end{table}
 \subsection{Sound multiplexer}
 The Sound Multiplexer subsystem is connected to the Sound Settings subsystem and the Output Layer
+\begin{figure}[h!]
+	\centering
+ 	\includegraphics[width=0.60\textwidth]{images/Soundmultiplex}
+ \caption{Sound Multiplexer subsystem description diagram}
+\end{figure}
+
+
 \subsubsection{ASSUMPTIONS}
 \begin{itemize}
 \begin{item}
