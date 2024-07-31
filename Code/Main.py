@@ -54,3 +54,10 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# To convert to exe
+#   Install PyInstaller:
+#       pip install pyinstaller
+#   Run:
+#       pyinstaller --onefile --noconsole laser_harp.py 
