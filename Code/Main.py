@@ -1,16 +1,13 @@
 import pygame
-import pigpio
+import RPi.GPIO as GPIO
 import threading
 import time
 
 
-# Installation:
-#   sudo apt-get install python3-pygame pigpio
-#   pip3 install pigpio
-# Setup:
-#    sudo systemctl enable pigpiod
-#    sudo systemctl start pigpiod
-# Run: sudo python3 Main.py
+# Install dependencies: 
+#   sudo apt-get install python3-pygame python3-rpi.gpio
+# Run with: 
+#   sudo python3 laser_harp.py
 
 
 # Initialize pygame mixer
@@ -18,18 +15,14 @@ pygame.mixer.init()
 
 # Define the monitorGPIO function
 def monitorGPIO(gpio_pin, sound_file, folder):
-    pi = pigpio.pi()
-    if not pi.connected:
-        print(f"Failed to connect to pigpio daemon for pin {gpio_pin}")
-        return
-
-    pi.set_mode(gpio_pin, pigpio.INPUT)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
     sound = pygame.mixer.Sound(folder + sound_file)
 
     while True:
-        value = pi.read(gpio_pin)
-        if value == 0:  # Reading input from laser
+        value = GPIO.input(gpio_pin)
+        if value == GPIO.LOW:  # Reading input from laser
             sound.play()
             while pygame.mixer.get_busy():
                 time.sleep(0.01)
@@ -47,11 +40,6 @@ def main():
         23: "B3.wav"
     }
 
-    pi = pigpio.pi()
-    if not pi.connected:
-        print("GPIO initialization failed.")
-        return
-
     threads = []
 
     for gpio_pin, sound_file in gpio_to_sound.items():
@@ -62,7 +50,7 @@ def main():
     for t in threads:
         t.join()
 
-    pi.stop()
+    GPIO.cleanup()
 
 if __name__ == "__main__":
     main()
