@@ -42,13 +42,8 @@ void monitorGPIO(int gpio_pin, const std::string& sound_file, const std::string&
         if (value == 0) // 0 = reading input from laser
         {
             sound.play();
-            while (sound.getStatus() == sf::Sound::Playing)
-            {
-                usleep(50000); // Sleep for 50 ms while sound plays
-            }
+            while (sound.getStatus() == sf::Sound::Playing) {}
         }
-
-        usleep(10000); // Sleep for 100 ms before reading again
     }
 }
 
