@@ -16,4 +16,6 @@ a.out
 .vscode
 .exe
 .out
+.gcode
+.stl
 local.properties
