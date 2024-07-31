@@ -8,13 +8,13 @@
 #include <pigpio.h>
 
 
-
 // Installs: sudo apt-get install libsfml-dev git build-essential pigpio alsa-utils
 // Enable GPOI code: sudo systemctl enable pigpiod
 // Start Gpio reading: sudo systemctl start pigpiod
 
 // Compile with: g++ -Wall -g -o Main.cpp -lpigpio -lrt -pthread -lsfml-audio -lsfml-system Main
 // Run with: sudo ./Main
+
 
 void monitorGPIO(int gpio_pin, const std::string& sound_file, const std::string& folder)
 {
@@ -50,7 +50,8 @@ void monitorGPIO(int gpio_pin, const std::string& sound_file, const std::string&
 int main()
 {
     std::string folder = "Sound Samples/";
-    std::unordered_map<int, std::string> gpio_to_sound = {
+    std::unordered_map<int, std::string> gpio_to_sound = 
+    {
         {21, "C3.wav"},
         {20, "D3.wav"},
         {16, "E3.wav"},
