@@ -7,7 +7,12 @@
 #include <unistd.h>
 #include <pigpio.h>
 
-// Install SFML with: sudo apt-get install libsfml-dev git build-essential
+
+
+// Installs: sudo apt-get install libsfml-dev git build-essential pigpio alsa-utils
+// Enable GPOI code: sudo systemctl enable pigpiod
+// Start Gpio reading: sudo systemctl start pigpiod
+
 // Compile with: g++ -Wall -g -o Main.cpp -lpigpio -lrt -pthread -lsfml-audio -lsfml-system Main
 // Run with: sudo ./Main
 
