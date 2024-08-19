@@ -35,7 +35,7 @@ void monitorGPIO(int gpio_pin, const std::string& sound_file, const std::string&
         int value = gpioRead(gpio_pin);
         if (value == -1)
         {
-            cerr << "Failed to read GPIO value for pin " << gpio_pin << endl;
+            std::cerr << "Failed to read GPIO value for pin " << gpio_pin << std::endl;
             return;
         }
 
