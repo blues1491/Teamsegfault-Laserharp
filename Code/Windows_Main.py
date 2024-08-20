@@ -1,84 +1,66 @@
 import pygame
-import RPi.GPIO as GPIO
 import threading
 import tkinter as tk
-from tkinter import ttk
-from tkinter import filedialog
+from tkinter import ttk, filedialog
 
-# Initialize pygame mixer
+# Initialize pygame mixer without initializing the video system
 pygame.mixer.init()
 
 # Global variables for settings
-current_folder = "Sound Samples/"
+current_folder = "Sound Samples/Harp/"
 volume = 1.0
 current_octave = 3  # Default octave
 sound_objects = {}  # Dictionary to store sound objects
-threads = []
 running = False  # Flag to check if the harp is running
 octave_range = [2, 3, 4, 5, 6]  # Supported octaves
 
-gpio_to_note = {
-    21: "C",
-    20: "C#",
-    16: "D",
-    12: "D#",
-    25: "E",
-    24: "F",
-    23: "F#",
-    18: "G",
-    15: "G#",
-    14: "A",
-    13: "A#",
-    19: "B",
-    26: "C"
+key_to_note = {
+    '`': "C",
+    '1': "C#",
+    '2': "D",
+    '3': "D#",
+    '4': "E",
+    '5': "F",
+    '6': "F#",
+    '7': "G",
+    '8': "G#",
+    '9': "A",
+    '0': "A#",
+    '-': "B",
+    '=': "C"
 }
 
 def preload_sounds():
     """Preload all sound files to ensure they are ready for playback."""
     global sound_objects
     sound_objects = {}
-    for gpio_pin, note in gpio_to_note.items():
-        if gpio_pin == 26:
+    for key, note in key_to_note.items():
+        if key == '=':  # Special case for top C
             sound_file = f"{note}{current_octave + 1}.wav"
         else:
             sound_file = f"{note}{current_octave}.wav"
         sound = pygame.mixer.Sound(current_folder + sound_file)
         sound.set_volume(volume)
-        sound_objects[gpio_pin] = sound
+        sound_objects[key] = sound
 
-def monitorGPIO(gpio_pin):
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-    sound = sound_objects[gpio_pin]
-
-    while running:
-        value = GPIO.input(gpio_pin)
-        if value == GPIO.HIGH:
-            sound.play()
+def monitor_keyboard(event):
+    key = event.char
+    if key in sound_objects:
+        sound_objects[key].play()
 
 def start_harp():
-    global running, threads
+    global running
     running = True
     preload_sounds()
-    threads = []
 
-    for gpio_pin in gpio_to_note.keys():
-        thread = threading.Thread(target=monitorGPIO, args=(gpio_pin,))
-        thread.daemon = True
-        thread.start()
-        threads.append(thread)
-    
     start_button.config(text="Stop", command=stop_harp)
+    root.bind("<KeyPress>", monitor_keyboard)  # Bind key press events
 
 def stop_harp():
     global running
     running = False
-    for thread in threads:
-        thread.join()  # Wait for all threads to finish
-    
-    GPIO.cleanup()
     start_button.config(text="Start", command=start_harp)
+    root.unbind("<KeyPress>")  # Unbind key press events
 
 def adjust_volume(value):
     global volume
@@ -104,18 +86,19 @@ def change_octave(value):
 
 def open_main_menu():
     global start_button
-    main_menu = tk.Tk()
-    main_menu.title("Laser Harp Main Menu")
+    global root
+    root = tk.Tk()
+    root.title("Laser Harp Main Menu")
 
-    ttk.Label(main_menu, text="Laser Harp", font=("Helvetica", 16)).pack(pady=20)
+    ttk.Label(root, text="Laser Harp", font=("Helvetica", 16)).pack(pady=20)
 
-    start_button = ttk.Button(main_menu, text="Start", command=start_harp)
+    start_button = ttk.Button(root, text="Start", command=start_harp)
     start_button.pack(pady=10)
 
-    ttk.Button(main_menu, text="Settings", command=open_settings).pack(pady=10)
-    ttk.Button(main_menu, text="Exit", command=main_menu.quit).pack(pady=10)
+    ttk.Button(root, text="Settings", command=open_settings).pack(pady=10)
+    ttk.Button(root, text="Exit", command=root.quit).pack(pady=10)
 
-    main_menu.mainloop()
+    root.mainloop()
 
 def open_settings():
     settings_window = tk.Toplevel()
