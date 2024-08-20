@@ -1,13 +1,15 @@
 import pygame
 import threading
 import tkinter as tk
-from tkinter import ttk, filedialog
+from tkinter import ttk
+import os
 
-# Initialize pygame mixer without initializing the video system
+# Initialize pygame mixer
 pygame.mixer.init()
 
 # Global variables for settings
-current_folder = "Sound Samples/Harp/"
+base_folder = "Sound Samples/"
+current_folder = base_folder + "Harp/"
 volume = 1.0
 current_octave = 3  # Default octave
 sound_objects = {}  # Dictionary to store sound objects
@@ -68,21 +70,17 @@ def adjust_volume(value):
     for sound in sound_objects.values():
         sound.set_volume(volume)
 
-def choose_folder():
+def choose_folder(folder_name):
     global current_folder
-    folder_selected = filedialog.askdirectory()
-    if folder_selected:
-        current_folder = folder_selected + "/"
-        if running:
-            stop_harp()
-            start_harp()
+    current_folder = base_folder + folder_name + "/"
+    if running:
+        preload_sounds()  # Reload sounds with the new folder
 
 def change_octave(value):
     global current_octave
     current_octave = int(value)
     if running:
-        stop_harp()
-        start_harp()
+        preload_sounds()  # Reload sounds with the new octave
 
 def open_main_menu():
     global start_button
@@ -95,29 +93,29 @@ def open_main_menu():
     start_button = ttk.Button(root, text="Start", command=start_harp)
     start_button.pack(pady=10)
 
-    ttk.Button(root, text="Settings", command=open_settings).pack(pady=10)
-    ttk.Button(root, text="Exit", command=root.quit).pack(pady=10)
-
-    root.mainloop()
-
-def open_settings():
-    settings_window = tk.Toplevel()
-    settings_window.title("Settings")
-
-    ttk.Label(settings_window, text="Adjust Volume").pack(pady=10)
-    volume_slider = ttk.Scale(settings_window, from_=0, to=1, orient='horizontal', command=adjust_volume)
+    ttk.Label(root, text="Adjust Volume").pack(pady=10)
+    volume_slider = ttk.Scale(root, from_=0, to=1, orient='horizontal', command=adjust_volume)
     volume_slider.set(volume)
     volume_slider.pack(pady=10)
 
-    ttk.Label(settings_window, text="Select Octave").pack(pady=10)
-    octave_dropdown = ttk.Combobox(settings_window, values=octave_range)
+    ttk.Label(root, text="Select Octave").pack(pady=10)
+    octave_dropdown = ttk.Combobox(root, values=octave_range)
     octave_dropdown.set(current_octave)
     octave_dropdown.bind("<<ComboboxSelected>>", lambda e: change_octave(octave_dropdown.get()))
     octave_dropdown.pack(pady=10)
 
-    ttk.Button(settings_window, text="Change Instrument Folder", command=choose_folder).pack(pady=10)
+    # Get all folders in the Sound Samples directory
+    instrument_folders = [f for f in os.listdir(base_folder) if os.path.isdir(os.path.join(base_folder, f))]
 
-    settings_window.mainloop()
+    ttk.Label(root, text="Select Instrument").pack(pady=10)
+    instrument_dropdown = ttk.Combobox(root, values=instrument_folders)
+    instrument_dropdown.set(os.path.basename(current_folder.strip("/")))
+    instrument_dropdown.bind("<<ComboboxSelected>>", lambda e: choose_folder(instrument_dropdown.get()))
+    instrument_dropdown.pack(pady=10)
+
+    ttk.Button(root, text="Exit", command=root.quit).pack(pady=10)
+
+    root.mainloop()
 
 if __name__ == "__main__":
     open_main_menu()
