@@ -7,7 +7,7 @@ import os
 pygame.mixer.init()
 
 # Global variables for settings
-base_folder = "Sound Samples/"
+base_folder = "../Sound Samples/"
 current_folder = base_folder + "Harp/"
 volume = 1.0
 current_octave = 3  # Default octave
@@ -20,18 +20,15 @@ key_to_note = {
     's': "D",
     'd': "E",
     'f': "F",
-    'h': "G",
-    'j': "A",
+    'g': "G",
+    'h': "A",
     'k': "B",
-    'l': "C",
     'A': "C#",
     'S': "D#",
     'D': "F",
     'F': "F#",
-    'H': "G#",
-    'J': "A#",
-    'K': "C",
-    'L': "C#"
+    'G': "G#",
+    'H': "A#",
 }
 
 def preload_sounds():
@@ -39,7 +36,7 @@ def preload_sounds():
     global sound_objects
     sound_objects = {}
     for key, note in key_to_note.items():
-        if key == 'l' or key == 'K' or key == 'L':  # Special case for top C and above
+        if key == 'K':  # Special case for top C and above
             sound_file = f"{note}{current_octave + 1}.wav"
         else:
             sound_file = f"{note}{current_octave}.wav"

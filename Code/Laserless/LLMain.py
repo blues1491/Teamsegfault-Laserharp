@@ -7,7 +7,7 @@ import os
 pygame.mixer.init()
 
 # Global variables for settings
-base_folder = "Sound Samples/"
+base_folder = "../Sound Samples/"
 current_folder = base_folder + "Harp/"
 volume = 1.0
 current_octave = 3  # Default octave
