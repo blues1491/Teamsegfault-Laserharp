@@ -3,16 +3,14 @@ import tkinter as tk
 from tkinter import ttk
 import os
 
-# Initialize pygame mixer
 pygame.mixer.init()
 
-# Global variables for settings
 base_folder = "../Sound Samples/"
 current_folder = base_folder + "Harp/"
 volume = 1.0
 current_octave = 3  # Default octave
-sound_objects = {}  # Dictionary to store sound objects
-running = False  # Flag to check if the harp is running
+sound_objects = {}
+running = False
 octave_range = [2, 3, 4, 5, 6]  # Supported octaves
 
 key_to_note = {
@@ -32,14 +30,10 @@ key_to_note = {
 }
 
 def preload_sounds():
-    """Preload all sound files to ensure they are ready for playback."""
     global sound_objects
     sound_objects = {}
     for key, note in key_to_note.items():
-        if key == 'K':  # Special case for top C and above
-            sound_file = f"{note}{current_octave + 1}.wav"
-        else:
-            sound_file = f"{note}{current_octave}.wav"
+        sound_file = f"{note}{current_octave}.wav"
         sound = pygame.mixer.Sound(current_folder + sound_file)
         sound.set_volume(volume)
         sound_objects[key] = sound
@@ -55,14 +49,14 @@ def start_harp():
     preload_sounds()
 
     start_button.config(text="Stop", command=stop_harp)
-    root.bind("<KeyPress>", monitor_keyboard)  # Bind key press events
+    root.bind("<KeyPress>", monitor_keyboard)
 
 def stop_harp():
     global running
     running = False
     start_button.config(text="Start", command=start_harp)
-    root.unbind("<KeyPress>")  # Unbind key press events
-
+    root.unbind("<KeyPress>")
+    
 def adjust_volume(value):
     global volume
     volume = float(value)
@@ -73,13 +67,13 @@ def choose_folder(folder_name):
     global current_folder
     current_folder = base_folder + folder_name + "/"
     if running:
-        preload_sounds()  # Reload sounds with the new folder
+        preload_sounds()
 
 def change_octave(value):
     global current_octave
     current_octave = int(value)
     if running:
-        preload_sounds()  # Reload sounds with the new octave
+        preload_sounds()
 
 def open_main_menu():
     global start_button
@@ -103,7 +97,6 @@ def open_main_menu():
     octave_dropdown.bind("<<ComboboxSelected>>", lambda e: change_octave(octave_dropdown.get()))
     octave_dropdown.pack(pady=10)
 
-    # Get all folders in the Sound Samples directory
     instrument_folders = [f for f in os.listdir(base_folder) if os.path.isdir(os.path.join(base_folder, f))]
 
     ttk.Label(root, text="Select Instrument").pack(pady=10)
