@@ -1,5 +1,4 @@
 import pygame
-import threading
 import tkinter as tk
 from tkinter import ttk
 import os
@@ -119,4 +118,3 @@ def open_main_menu():
 
 if __name__ == "__main__":
     open_main_menu()
-
