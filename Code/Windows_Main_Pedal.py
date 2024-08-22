@@ -17,19 +17,22 @@ running = False  # Flag to check if the harp is running
 octave_range = [2, 3, 4, 5, 6]  # Supported octaves
 
 key_to_note = {
-    '`': "C",
-    '1': "C#",
-    '2': "D",
-    '3': "D#",
-    '4': "E",
-    '5': "F",
-    '6': "F#",
-    '7': "G",
-    '8': "G#",
-    '9': "A",
-    '0': "A#",
-    '-': "B",
-    '=': "C"
+    'a': "C",
+    's': "D",
+    'd': "E",
+    'f': "F",
+    'h': "G",
+    'j': "A",
+    'k': "B",
+    'l': "C",
+    'A': "C#",
+    'S': "D#",
+    'D': "F",
+    'F': "F#",
+    'H': "G#",
+    'J': "A#",
+    'K': "C",
+    'L': "C#"
 }
 
 def preload_sounds():
@@ -37,7 +40,7 @@ def preload_sounds():
     global sound_objects
     sound_objects = {}
     for key, note in key_to_note.items():
-        if key == '=':  # Special case for top C
+        if key == 'l' or key == 'K' or key == 'L':  # Special case for top C and above
             sound_file = f"{note}{current_octave + 1}.wav"
         else:
             sound_file = f"{note}{current_octave}.wav"
@@ -119,4 +122,3 @@ def open_main_menu():
 
 if __name__ == "__main__":
     open_main_menu()
-
