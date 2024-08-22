@@ -27,13 +27,17 @@ key_to_note = {
     'F': "F#",
     'G': "G#",
     'H': "A#",
+    'K': "C"
 }
 
 def preload_sounds():
     global sound_objects
     sound_objects = {}
     for key, note in key_to_note.items():
-        sound_file = f"{note}{current_octave}.wav"
+        if key == 'K':  # Special case for top C
+            sound_file = f"{note}{current_octave + 1}.wav"
+        else:
+            sound_file = f"{note}{current_octave}.wav"
         sound = pygame.mixer.Sound(current_folder + sound_file)
         sound.set_volume(volume)
         sound_objects[key] = sound
