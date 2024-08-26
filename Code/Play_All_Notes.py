@@ -4,8 +4,7 @@ import pygame
 
 pygame.mixer.init()
 
-instrument = "Harp"
-audio_directory = "Sound Samples/" + instrument + "/"
+instruments = {"Harp", "Piano"}
 
 note_order = [
     "C2", "C#2", "D2", "D#2", "E2", "F2", "F#2", "G2", "G#2", "A2", "A#2", "B2",
@@ -16,21 +15,26 @@ note_order = [
     "C7"
 ]
 
-for note in note_order:
-    file_path = os.path.join(audio_directory, f"{note}.wav")
+for instrument in instruments:
+    audio_directory = "Sound Samples/" + instrument + "/"
     
-    if os.path.isfile(file_path):
-        try:
-            pygame.mixer.music.load(file_path)
-            pygame.mixer.music.play()
-            print(f"{note}")
-            
-            while pygame.mixer.music.get_busy():
-                time.sleep(0.1)
-            
-        except Exception as e:
-            print(f"Error playing {note}: {e}")
-    else:
-        print(f"Note {note} not found in the directory.")
+    for note in note_order:
+        file_path = os.path.join(audio_directory, f"{note}.wav")
+        
+        if os.path.isfile(file_path):
+            try:
+                pygame.mixer.music.load(file_path)
+                pygame.mixer.music.play()
+                print(f"{instrument} {note}")
+                
+                while pygame.mixer.music.get_busy():
+                    time.sleep(0.1)
+                
+            except Exception as e:
+                print(f"Error playing {instrument} {note}: {e}")
+        else:
+            print(f"Note {instrument} {note} not found in the directory.")
+        
+    print(f"Finished playing all {instrument} notes")
     
 print("Finished playing all available notes.")
