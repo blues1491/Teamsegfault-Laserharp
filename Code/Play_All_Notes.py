@@ -4,7 +4,8 @@ import pygame
 
 pygame.mixer.init()
 
-instruments = {"Harp", "Piano"}
+base_folder = "Sound Samples/"
+instruments = [f for f in os.listdir(base_folder) if os.path.isdir(os.path.join(base_folder, f))]
 
 note_order = [
     "C2", "C#2", "D2", "D#2", "E2", "F2", "F#2", "G2", "G#2", "A2", "A#2", "B2",
@@ -16,7 +17,7 @@ note_order = [
 ]
 
 for instrument in instruments:
-    audio_directory = "Sound Samples/" + instrument + "/"
+    audio_directory = base_folder + instrument + "/"
     
     for note in note_order:
         file_path = os.path.join(audio_directory, f"{note}.wav")
