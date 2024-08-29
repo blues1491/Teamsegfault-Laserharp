@@ -15,11 +15,9 @@ running = False
 octave_range = [2, 3, 4, 5]
 instrument_folders = [f for f in os.listdir(base_folder) if os.path.isdir(os.path.join(base_folder, f))]
 
-# Advanced Options Variables
 keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 current_key = "C"
 
-# Define the input-to-note mapping
 input_to_note = {
     '`': "C" ,
     '1': "C#",
@@ -37,38 +35,16 @@ input_to_note = {
 }
 
 def transpose_note(note, key):
-    """ Transpose a single note to the specified key """
     key_index = keys.index(key)
     note_index = keys.index(note)
     transposed_index = (note_index + key_index) % len(keys)
     transposed_note = keys[transposed_index]
 
     if transposed_index < key_index:
-        return transposed_note, current_octave + 1  # Move up an octave if the note is higher than the root key
+        return transposed_note, current_octave + 1
     return transposed_note, current_octave
 
-def update_input_to_note():
-    """ Update the input_to_note mapping based on the selected key """
-    global input_to_note
-    input_to_note = {
-        '`': "C" ,
-        '1': "C#",
-        '2': "D" ,
-        '3': "D#",
-        '4': "E" ,
-        '5': "F" ,
-        '6': "F#",
-        '7': "G" ,
-        '8': "G#",
-        '9': "A" ,
-        '0': "A#",
-        '-': "B" ,
-        '=': "C"
-    }
-
 def preload_sounds():
-    update_input_to_note()  # Update the notes mapping based on the key
-
     global sound_objects
     sound_objects = {}
     
@@ -84,7 +60,6 @@ def preload_sounds():
 def monitor_keyboard(event):
     global current_octave
 
-    # Check for shift keys and adjust the octave
     if event.keysym == 'Shift_R':
         if current_octave < max(octave_range):
             current_octave += 1
