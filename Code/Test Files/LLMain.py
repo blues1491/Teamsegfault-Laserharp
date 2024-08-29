@@ -146,7 +146,6 @@ def open_main_menu():
     instrument_button_padding = int(instrument_button_height * 0.25)
 
     for i, instrument in enumerate(instrument_folders):
-        photo = PhotoImage(file = base_folder + instrument + "/Image.png") 
         instrument_button = tk.Button(instrument_button_frame, text=f"{instrument}", width=20, command=lambda i=instrument: choose_folder(i), activebackground="blue", activeforeground="white")
         instrument_button.grid(row=i, column=0, pady=(0, instrument_button_padding), sticky='nse')
         instrument_button_frame.grid_rowconfigure(i, weight=1)
