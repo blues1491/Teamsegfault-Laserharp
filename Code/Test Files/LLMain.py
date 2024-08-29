@@ -12,7 +12,7 @@ current_octave = 4  # Default octave
 sound_objects = {}
 key_status = {}
 running = False 
-octave_range = [2, 3, 4, 5, 6]
+octave_range = [2, 3, 4, 5]
 instrument_folders = [f for f in os.listdir(base_folder) if os.path.isdir(os.path.join(base_folder, f))]
 
 # Advanced Options Variables
@@ -21,18 +21,18 @@ current_key = "C"
 
 # Define the input-to-note mapping
 input_to_note = {
-    '`': "C",
+    '`': "C" ,
     '1': "C#",
-    '2': "D",
+    '2': "D" ,
     '3': "D#",
-    '4': "E",
-    '5': "F",
+    '4': "E" ,
+    '5': "F" ,
     '6': "F#",
-    '7': "G",
+    '7': "G" ,
     '8': "G#",
-    '9': "A",
+    '9': "A" ,
     '0': "A#",
-    '-': "B",
+    '-': "B" ,
     '=': "C"
 }
 
@@ -51,18 +51,18 @@ def update_input_to_note():
     """ Update the input_to_note mapping based on the selected key """
     global input_to_note
     input_to_note = {
-        '`': "C",
+        '`': "C" ,
         '1': "C#",
-        '2': "D",
+        '2': "D" ,
         '3': "D#",
-        '4': "E",
-        '5': "F",
+        '4': "E" ,
+        '5': "F" ,
         '6': "F#",
-        '7': "G",
+        '7': "G" ,
         '8': "G#",
-        '9': "A",
+        '9': "A" ,
         '0': "A#",
-        '-': "B",
+        '-': "B" ,
         '=': "C"
     }
 
@@ -180,7 +180,7 @@ def advanced_menu():
     menu.attributes('-fullscreen', True)
     
     tk.Label(menu, text="Select Key").pack(pady=padding_y)
-    key_dropdown = ttk.Combobox(menu, values=keys)
+    key_dropdown = ttk.Combobox(menu, values=keys, state="readonly")
     key_dropdown.set(current_key)
     key_dropdown.bind("<<ComboboxSelected>>", lambda e: change_key(key_dropdown.get()))
     key_dropdown.pack(pady=padding_y)
@@ -189,6 +189,9 @@ def advanced_menu():
     button_frame.pack(side=tk.BOTTOM, pady=padding_y)
 
     tk.Button(button_frame, text="Exit", command=menu.destroy, width=20).pack(side=tk.RIGHT, padx=padding_x)
+    
+    if running == True:
+        menu.bind("<KeyPress>", monitor_keyboard)
 
 def main_menu():
     global start_button
