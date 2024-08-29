@@ -4,7 +4,7 @@ import pygame
 
 pygame.mixer.init()
 
-base_folder = "Sound Samples/"
+base_folder = "../Sound Samples/"
 instruments = [f for f in os.listdir(base_folder) if os.path.isdir(os.path.join(base_folder, f))]
 
 note_order = [
