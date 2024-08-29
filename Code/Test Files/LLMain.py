@@ -97,6 +97,7 @@ def open_main_menu():
     root = tk.Tk()
     root.title("Laser Harp Main Menu")
     root.attributes('-fullscreen', True)
+    #root.configure(background='black')
 
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
@@ -105,6 +106,7 @@ def open_main_menu():
 
     main_frame = tk.Frame(root)
     main_frame.pack(expand=True, fill='both', padx=padding_x, pady=padding_y)
+    #main_frame.configure(background='black')
 
     main_frame.grid_columnconfigure(0, weight=1)
     main_frame.grid_columnconfigure(1, weight=1)
@@ -122,13 +124,13 @@ def open_main_menu():
     octave_button_padding = int(octave_button_height * 0.25)
     
     for i, octave in enumerate(octave_range):
-        octave_button = tk.Button(octave_buttons_frame, text=f"Octave {octave}", command=lambda o=octave: change_octave(o))
+        octave_button = tk.Button(octave_buttons_frame, text=f"Octave {octave}", command=lambda o=octave: change_octave(o), width=20, activebackground="blue", activeforeground="white")
         octave_button.grid(row=i * 2, column=0, pady=(0, octave_button_padding), sticky='nsw')
         octave_buttons_frame.grid_rowconfigure(i * 2, weight=1)
 
 
     tk.Label(main_frame, text="Volume").grid(row=0, column=1, pady=padding_y)
-    volume_slider = tk.Scale(main_frame, from_=1, to=0, orient='vertical', command=adjust_volume, resolution=.01, width=padding_y*4)
+    volume_slider = tk.Scale(main_frame, from_=1, to=0, orient='vertical', command=adjust_volume, resolution=.01, width=padding_y*4, activebackground="blue", showvalue=0, repeatdelay=100)
     volume_slider.set(volume)
     volume_slider.grid(row=1, column=1, sticky='ns')
 
@@ -144,7 +146,8 @@ def open_main_menu():
     instrument_button_padding = int(instrument_button_height * 0.25)
 
     for i, instrument in enumerate(instrument_folders):
-        instrument_button = tk.Button(instrument_button_frame, text=f"{instrument}", width=20, command=lambda i=instrument: choose_folder(i))
+        photo = PhotoImage(file = base_folder + instrument + "/Image.png") 
+        instrument_button = tk.Button(instrument_button_frame, text=f"{instrument}", width=20, command=lambda i=instrument: choose_folder(i), activebackground="blue", activeforeground="white")
         instrument_button.grid(row=i, column=0, pady=(0, instrument_button_padding), sticky='nse')
         instrument_button_frame.grid_rowconfigure(i, weight=1)
 
