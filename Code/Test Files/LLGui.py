@@ -63,7 +63,6 @@ def advanced_menu():
         LLMain.sustain_option = sustain_var.get()
         if LLMain.running:
             audio.preload_sounds()
-        print(f"Sustain option updated to: {LLMain.sustain_option}")
 
     sustain_check = tk.Checkbutton(menu, text="Sustain", variable=sustain_var, command=update_sustain)
     sustain_check.pack(pady=padding_y)
@@ -99,6 +98,7 @@ def main_menu():
     global start_button
     global root
     root = tk.Tk()
+    LLMain.root = root
     root.title("Laser Harp Main Menu")
     root.attributes('-fullscreen', True)
 

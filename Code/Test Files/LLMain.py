@@ -21,6 +21,14 @@ current_octave = 4
 keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 current_key = "C"
 
+fade_in_duration = 500
+fade_out_duration = 500
+attack_duration = 100
+sustain_interval = 1000
+sustain_option = False
+max_overlaps = 4
+
+
 input_to_note = {
     '`': "C",
     '1': "C#",
@@ -37,7 +45,7 @@ input_to_note = {
     '=': "C"
 }
 
-sustain_option = False
+root = None
 
 if __name__ == "__main__":
     LLGui.main_menu()
