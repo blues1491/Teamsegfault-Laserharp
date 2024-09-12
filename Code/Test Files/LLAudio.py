@@ -2,38 +2,7 @@ import os
 import pygame
 from pydub import AudioSegment
 from io import BytesIO
-import LLMain as main
-import LLGui as gui
-
-base_folder = "../Sound Samples/"
-current_folder = base_folder + "Harp/"
-instrument_folders = [f for f in os.listdir(base_folder) if os.path.isdir(os.path.join(base_folder, f))]
-
-volume = 0.5
-sound_objects = {}
-key_status = {}
-
-octave_range = [2, 3, 4, 5]
-current_octave = 4
-
-keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
-current_key = "C"
-
-input_to_note = {
-    '`': "C",
-    '1': "C#",
-    '2': "D",
-    '3': "D#",
-    '4': "E",
-    '5': "F",
-    '6': "F#",
-    '7': "G",
-    '8': "G#",
-    '9': "A",
-    '0': "A#",
-    '-': "B",
-    '=': "C"
-}
+import LLMain
 
 # Convert pydub audio to pygame sound
 def convert_pydub_to_pygame(sound):
@@ -44,86 +13,76 @@ def convert_pydub_to_pygame(sound):
 
 # Transpose note
 def transpose_note(note, key):
-    key_index = keys.index(key)
-    note_index = keys.index(note)
-    transposed_index = (note_index + key_index) % len(keys)
-    transposed_note = keys[transposed_index]
+    key_index = LLMain.keys.index(key)
+    note_index = LLMain.keys.index(note)
+    transposed_index = (note_index + key_index) % len(LLMain.keys)
+    transposed_note = LLMain.keys[transposed_index]
 
     if transposed_index < key_index:
-        return transposed_note, current_octave + 1
-    return transposed_note, current_octave
+        return transposed_note, LLMain.current_octave + 1
+    return transposed_note, LLMain.current_octave
 
 # Preload sound files
 def preload_sounds():
-    global sound_objects
-    sound_objects = {}
-    
-    for input_key, note in input_to_note.items():
-        transposed_note, octave = transpose_note(note, current_key)
+    LLMain.sound_objects = {}
+    for input_key, note in LLMain.input_to_note.items():
+        transposed_note, octave = transpose_note(note, LLMain.current_key)
         if input_key == '=':  # Special case for top note
             octave += 1
         sound_file = f"{transposed_note}{octave}.wav"
-        sound = AudioSegment.from_wav(os.path.join(current_folder, sound_file))
+        sound_path = os.path.join(LLMain.current_folder, sound_file)
+        sound = AudioSegment.from_wav(sound_path)
+        if LLMain.sustain_option:
+            # Apply fades and extend the sound
+            fade_duration = 50  # milliseconds
+            sound = sound.fade_in(fade_duration).fade_out(fade_duration)
+            sound = sound * 10  # Extend sound duration
         pygame_sound = convert_pydub_to_pygame(sound)
-        pygame_sound.set_volume(volume)
-        sound_objects[input_key] = pygame_sound
+        pygame_sound.set_volume(LLMain.volume)
+        LLMain.sound_objects[input_key] = pygame_sound
 
-# Monitor keyboard
-def monitor_keyboard(event):
-    global current_octave
-
-    if event.keysym == 'Shift_R':
-        if current_octave < max(octave_range):
-            current_octave += 1
-            preload_sounds()
-    elif event.keysym == 'Shift_L':
-        if current_octave > min(octave_range):
-            current_octave -= 1
-            preload_sounds()
-
+# Handle key press
+def key_press(event):
     key = event.char
-    if key in sound_objects:
-        sound_objects[key].play()
+    if key not in LLMain.key_status or not LLMain.key_status[key]:
+        LLMain.key_status[key] = True
+        if key in LLMain.sound_objects:
+            if LLMain.sustain_option:
+                LLMain.sound_objects[key].play(loops=-1)
+            else:
+                LLMain.sound_objects[key].play()
+
+# Handle key release
+def key_release(event):
+    key = event.char
+    LLMain.key_status[key] = False
+    if LLMain.sustain_option and key in LLMain.sound_objects:
+        LLMain.sound_objects[key].stop()
 
 def start_harp():
-    global running
-    running = True
+    LLMain.running = True
     preload_sounds()
 
-    gui.start_button.config(text="Stop", command=stop_harp)
-    gui.root.bind("<KeyPress>", monitor_keyboard)
-
 def stop_harp():
-    global running
-    running = False
-    gui.start_button.config(text="Start", command=start_harp)
-    gui.root.unbind("<KeyPress>")
+    LLMain.running = False
 
 # Change settings
 def change_octave(octave):
-    global current_octave
-    current_octave = int(octave)
-    if running:
+    LLMain.current_octave = int(octave)
+    if LLMain.running:
         preload_sounds()
 
 def adjust_volume(value):
-    global volume
-    volume = float(value)
-    for sound in sound_objects.values():
-        sound.set_volume(volume)
+    LLMain.volume = float(value)
+    for sound in LLMain.sound_objects.values():
+        sound.set_volume(LLMain.volume)
 
 def choose_folder(folder_name):
-    global current_folder
-    current_folder = base_folder + folder_name + "/"
-    if running:
+    LLMain.current_folder = LLMain.base_folder + folder_name + "/"
+    if LLMain.running:
         preload_sounds()
 
 def change_key(key):
-    global current_key
-    current_key = key
-    if running:
+    LLMain.current_key = key
+    if LLMain.running:
         preload_sounds()
-
-# Initialize audio system
-def initialize_audio():
-    pygame.mixer.init()
