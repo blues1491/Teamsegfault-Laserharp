@@ -1,6 +1,6 @@
 import pygame
 import os
-import LLGui
+import LLGui 
 
 pygame.mixer.init()
 
@@ -54,6 +54,13 @@ input_to_note = {
 }
 
 root = None
+
+# New variables to track the time of the last shift key press
+last_shift_l_time = 0
+last_shift_r_time = 0
+
+# Define a cooldown period in seconds
+shift_cooldown = 0.2  # 200 milliseconds
 
 if __name__ == "__main__":
     LLGui.main_menu()

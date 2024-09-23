@@ -3,6 +3,7 @@ import pygame
 from pydub import AudioSegment
 from io import BytesIO
 import LLMain
+import time
 
 # Initialize the mixer with more channels if needed
 pygame.mixer.set_num_channels(64)
@@ -84,8 +85,33 @@ def preload_sounds():
 
 def key_press(event):
     """Handle key press events."""
+    keysym = event.keysym
     key = event.char
-    if key in LLMain.input_to_note:
+    current_time = time.time()
+
+    if keysym == 'Shift_L':
+        if current_time - LLMain.last_shift_l_time > LLMain.shift_cooldown:
+            # Left shift pressed, decrease octave
+            new_octave = LLMain.current_octave - 1
+            if new_octave in LLMain.octave_range:
+                change_octave(new_octave)
+                LLMain.last_shift_l_time = current_time
+                print(f"Octave decreased to {new_octave}")
+            else:
+                print("Cannot decrease octave further.")
+    elif keysym == 'Shift_R':
+        if current_time - LLMain.last_shift_r_time > LLMain.shift_cooldown:
+            # Right shift pressed, increase octave
+            new_octave = LLMain.current_octave + 1
+            if new_octave in LLMain.octave_range:
+                change_octave(new_octave)
+                LLMain.last_shift_r_time = current_time
+                print(f"Octave increased to {new_octave}")
+            else:
+                print("Cannot increase octave further.")
+    elif key in LLMain.input_to_note:
+        # Existing note handling code...
+
         note_id = get_note_identifier(key)
         if LLMain.loop_mode:
             # Handle looping
@@ -97,7 +123,7 @@ def key_press(event):
                 if len(LLMain.looping_notes) >= LLMain.max_loops:
                     print("Maximum number of looping notes reached.")
                 else:
-                    # Start looping the note (using sustain settings or normal depending on sustain_option)
+                    # Start looping the note
                     start_looping_note(note_id, key)
             # Reset loop mode
             LLMain.loop_mode = False
@@ -123,21 +149,24 @@ def key_press(event):
 def key_release(event):
     """Handle key release events."""
     key = event.char
-    note_id = get_note_identifier(key)
-    if key in LLMain.key_status:
-        LLMain.key_status[key] = False
-        if LLMain.sustain_option:
-            # If the note is looping, do not stop it
-            if note_id in LLMain.looping_notes:
-                pass
-            else:
-                # Cancel scheduled sustain plays
-                if key in LLMain.scheduled_tasks:
-                    LLMain.root.after_cancel(LLMain.scheduled_tasks[key])
-                    del LLMain.scheduled_tasks[key]
-                # Schedule to stop the sustain sound after sustain_interval
-                task_id = LLMain.root.after(LLMain.sustain_interval, lambda: stop_sustain_sound(key))
-                LLMain.scheduled_tasks[key] = task_id
+    keysym = event.keysym
+
+    if key in LLMain.input_to_note:
+        if key in LLMain.key_status:
+            LLMain.key_status[key] = False
+            note_id = get_note_identifier(key)
+            if LLMain.sustain_option:
+                # If the note is looping, do not stop it
+                if note_id in LLMain.looping_notes:
+                    pass
+                else:
+                    # Cancel scheduled sustain plays
+                    if key in LLMain.scheduled_tasks:
+                        LLMain.root.after_cancel(LLMain.scheduled_tasks[key])
+                        del LLMain.scheduled_tasks[key]
+                    # Schedule to stop the sustain sound after sustain_interval
+                    task_id = LLMain.root.after(LLMain.sustain_interval, lambda: stop_sustain_sound(key))
+                    LLMain.scheduled_tasks[key] = task_id
 
 def schedule_sustain_play(key):
     """Schedule the sustain sound to play with overlaps."""
