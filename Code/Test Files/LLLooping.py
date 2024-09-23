@@ -175,7 +175,9 @@ def start_looping_note(note_id, key):
         'slot': slot_index,
         'octave_locked': octave_locked,
         'locked_octave': locked_octave,
-        'sustain_option': LLMain.sustain_option  # Store sustain option status
+        'sustain_option': LLMain.sustain_option,
+        'key_locked': False,       # Initialize as not key-locked
+        'locked_key': None         # No locked key yet
     }
 
     # Add note_info to looping_notes
@@ -347,6 +349,50 @@ def unlock_all_octaves():
         # Reload sounds with the current global octave
         LLAudio.preload_sound_for_looping_note(note_id, note_info['key'])
     print("All octaves unlocked.")
+    # Update the GUI display
+    if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
+        LLMain.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')
+
+def toggle_key_lock(slot_index):
+    """Toggle the key lock for a looping note in a given slot."""
+    note_id = LLMain.looping_note_slots[slot_index]
+    if note_id:
+        note_info = LLMain.looping_notes[note_id]
+        note_info['key_locked'] = not note_info['key_locked']
+        if note_info['key_locked']:
+            note_info['locked_key'] = LLMain.current_key
+            print(f"Key locked for note {note_id} at key {note_info['locked_key']}")
+        else:
+            note_info['locked_key'] = None
+            print(f"Key unlocked for note {note_id}")
+        # Reload sound with the locked or current key
+        LLAudio.preload_sound_for_looping_note(note_id, note_info['key'])
+        # Update the GUI display
+        if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
+            LLMain.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')
+
+def lock_all_keys():
+    """Lock the key for all looping notes."""
+    for note_id, note_info in LLMain.looping_notes.items():
+        if not note_info['key_locked']:
+            note_info['key_locked'] = True
+            note_info['locked_key'] = LLMain.current_key
+            print(f"Key locked for note {note_id} at key {note_info['locked_key']}")
+            LLAudio.preload_sound_for_looping_note(note_id, note_info['key'])
+    print("All keys locked.")
+    # Update the GUI display
+    if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
+        LLMain.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')
+
+def unlock_all_keys():
+    """Unlock the key for all looping notes."""
+    for note_id, note_info in LLMain.looping_notes.items():
+        if note_info['key_locked']:
+            note_info['key_locked'] = False
+            note_info['locked_key'] = None
+            print(f"Key unlocked for note {note_id}")
+            LLAudio.preload_sound_for_looping_note(note_id, note_info['key'])
+    print("All keys unlocked.")
     # Update the GUI display
     if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
         LLMain.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')

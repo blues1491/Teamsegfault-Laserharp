@@ -2,9 +2,10 @@
 
 import LLMain
 
-def transpose_note(note, key, octave):
-    """Transpose a note based on the current key, adjusting the octave if necessary."""
-    key_index = LLMain.keys.index(key)
+def transpose_note(note, key, octave, locked_key=None):
+    """Transpose a note based on the current key or locked key, adjusting the octave if necessary."""
+    used_key = locked_key if locked_key else key
+    key_index = LLMain.keys.index(used_key)
     note_index = LLMain.keys.index(note)
     transposed_index = (note_index + key_index) % len(LLMain.keys)
     transposed_note = LLMain.keys[transposed_index]

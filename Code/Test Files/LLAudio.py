@@ -77,14 +77,21 @@ def preload_sounds():
         preload_sound_for_looping_note(note_id, key)
 
 def preload_sound_for_looping_note(note_id, key):
+    """Preload sounds for a specific looping note based on its current settings."""
     note_info = LLMain.looping_notes[note_id]
     octave = LLMain.current_octave
     if note_info['octave_locked']:
         octave = note_info['locked_octave']
     if key == '=':
         octave += 1
+
+    # Use locked key if key is locked
+    used_key = LLMain.current_key
+    if note_info.get('key_locked'):
+        used_key = note_info['locked_key']
+
     original_note = LLMain.input_to_note[key]
-    transposed_note, adjusted_octave = LLHelpers.transpose_note(original_note, LLMain.current_key, octave)
+    transposed_note, adjusted_octave = LLHelpers.transpose_note(original_note, used_key, octave)
     sound_file = f"{transposed_note}{adjusted_octave}.wav"
     sound_path = os.path.join(LLMain.current_folder, sound_file)
 
@@ -131,9 +138,8 @@ def adjust_volume(value):
     """Adjust the volume of all sounds."""
     LLMain.volume = float(value)
     for sounds in LLMain.sound_objects.values():
-        sounds['attack'].set_volume(LLMain.volume)
-        sounds['sustain'].set_volume(LLMain.volume)
-        sounds['original'].set_volume(LLMain.volume)
+        for sound in sounds.values():
+            sound.set_volume(LLMain.volume)
     # Adjust volume for looping notes
     for note_info in LLMain.looping_notes.values():
         sounds = note_info.get('sounds', {})
@@ -145,6 +151,10 @@ def change_octave(octave):
     LLMain.current_octave = int(octave)
     if LLMain.running:
         preload_sounds()
+        # Reload sounds for looping notes
+        for note_id, note_info in LLMain.looping_notes.items():
+            if not note_info['octave_locked']:
+                preload_sound_for_looping_note(note_id, note_info['key'])
 
     # Update the display of looping notes
     if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
@@ -152,22 +162,22 @@ def change_octave(octave):
             LLMain.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')
         except Exception as e:
             print(f"Error updating advanced menu: {e}")
-    else:
-        LLMain.advanced_menu_window = None  # Ensure the reference is cleared
 
 def change_key(key):
     """Change the current key."""
     LLMain.current_key = key
     if LLMain.running:
         preload_sounds()
+        # Reload sounds for looping notes that are not key locked
+        for note_id, note_info in LLMain.looping_notes.items():
+            if not note_info.get('key_locked'):
+                preload_sound_for_looping_note(note_id, note_info['key'])
     # Update the display of looping notes
     if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
         try:
             LLMain.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')
         except Exception as e:
             print(f"Error updating advanced menu: {e}")
-    else:
-        LLMain.advanced_menu_window = None  # Ensure the reference is cleared
 
 def choose_folder(folder_name):
     """Change the current instrument folder."""

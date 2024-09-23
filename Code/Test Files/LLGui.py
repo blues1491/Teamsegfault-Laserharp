@@ -148,6 +148,16 @@ def advanced_menu():
         slot_label = tk.Label(slot_frame, text=f"Slot {i+1}: Available")
         slot_label.pack(side='left', padx=padding_x/2)
 
+        # Key lock checkbox
+        key_lock_var = tk.BooleanVar()
+        key_lock_check = tk.Checkbutton(
+            slot_frame,
+            text="Key Lock",
+            variable=key_lock_var,
+            command=lambda idx=i: LLLooping.toggle_key_lock(idx)
+        )
+        key_lock_check.pack(side='right', padx=padding_x/2)
+
         # Octave lock checkbox
         octave_lock_var = tk.BooleanVar()
         octave_lock_check = tk.Checkbutton(
@@ -166,30 +176,49 @@ def advanced_menu():
         )
         stop_loop_button.pack(side='right', padx=padding_x/2)
 
-        # Store frame, label, octave lock var, and sustain var
+        # Store frame, label, and variables
         LLMain.looping_slot_frames.append({
             'frame': slot_frame,
             'label': slot_label,
             'octave_lock_var': octave_lock_var,
+            'key_lock_var': key_lock_var  # Store the key lock variable
         })
 
-    # Add Lock All and Unlock All buttons
-    lock_buttons_frame = tk.Frame(looping_frame)
-    lock_buttons_frame.pack(pady=padding_y)
+    # Add Lock All and Unlock All buttons for octaves
+    octave_lock_buttons_frame = tk.Frame(looping_frame)
+    octave_lock_buttons_frame.pack(pady=padding_y)
 
-    lock_all_button = tk.Button(
-        lock_buttons_frame,
+    lock_all_octaves_button = tk.Button(
+        octave_lock_buttons_frame,
         text="Lock All Octaves",
         command=LLLooping.lock_all_octaves
     )
-    lock_all_button.pack(side='left', padx=padding_x/2)
+    lock_all_octaves_button.pack(side='left', padx=padding_x/2)
 
-    unlock_all_button = tk.Button(
-        lock_buttons_frame,
+    unlock_all_octaves_button = tk.Button(
+        octave_lock_buttons_frame,
         text="Unlock All Octaves",
         command=LLLooping.unlock_all_octaves
     )
-    unlock_all_button.pack(side='right', padx=padding_x/2)
+    unlock_all_octaves_button.pack(side='right', padx=padding_x/2)
+
+    # Add Lock All and Unlock All buttons for keys
+    key_lock_buttons_frame = tk.Frame(looping_frame)
+    key_lock_buttons_frame.pack(pady=padding_y)
+
+    lock_all_keys_button = tk.Button(
+        key_lock_buttons_frame,
+        text="Lock All Keys",
+        command=LLLooping.lock_all_keys
+    )
+    lock_all_keys_button.pack(side='left', padx=padding_x/2)
+
+    unlock_all_keys_button = tk.Button(
+        key_lock_buttons_frame,
+        text="Unlock All Keys",
+        command=LLLooping.unlock_all_keys
+    )
+    unlock_all_keys_button.pack(side='right', padx=padding_x/2)
 
     # Bind a custom event to update the display
     menu.bind('<<UpdateLoopingNotesDisplay>>', update_looping_notes_display)
@@ -222,30 +251,6 @@ def advanced_menu():
     menu.grab_set()
     root.wait_window(menu)
 
-def looping_notes_display():
-    """Create a display for looping note slots."""
-    looping_frame = tk.Frame(main_frame)
-    looping_frame.grid(row=0, column=3, rowspan=2, sticky='nsew', padx=padding_x, pady=padding_y)
-    main_frame.grid_columnconfigure(3, weight=1)
-
-    tk.Label(looping_frame, text="Looping Notes Slots").pack(pady=padding_y)
-
-    # Create a frame for each slot
-    LLMain.looping_slot_frames = []
-
-    for i in range(LLMain.max_loops):
-        slot_frame = tk.Frame(looping_frame, relief='sunken', borderwidth=1)
-        slot_frame.pack(fill='x', pady=padding_y/4)
-
-        slot_label = tk.Label(slot_frame, text=f"Slot {i+1}: Available")
-        slot_label.pack(side='left', padx=padding_x/2)
-
-        # Store frame and label
-        LLMain.looping_slot_frames.append({'frame': slot_frame, 'label': slot_label})
-
-    # Bind the custom event
-    root.bind('<<UpdateLoopingNotesDisplay>>', update_looping_notes_display)
-
 def update_looping_notes_display(event=None):
     """Update the display of looping note slots."""
     if not hasattr(LLMain, 'looping_slot_frames'):
@@ -254,6 +259,8 @@ def update_looping_notes_display(event=None):
     for i, slot_info in enumerate(LLMain.looping_slot_frames):
         note_id = LLMain.looping_note_slots[i]
         slot_label = slot_info['label']
+        octave_lock_var = slot_info['octave_lock_var']
+        key_lock_var = slot_info['key_lock_var']
         if note_id is not None:
             note_info = LLMain.looping_notes[note_id]
             key = note_info['key']
@@ -265,21 +272,25 @@ def update_looping_notes_display(event=None):
                 octave = LLMain.current_octave
             if key == '=':
                 octave += 1
-            # Transpose the note based on the current key
-            transposed_note, adjusted_octave = LLHelpers.transpose_note(original_note, LLMain.current_key, octave)
+            # Use locked key if key is locked
+            used_key = note_info['locked_key'] if note_info['key_locked'] else LLMain.current_key
+            # Transpose the note based on the used key
+            transposed_note, adjusted_octave = LLHelpers.transpose_note(original_note, used_key, octave)
             display_note_id = f"{transposed_note}{adjusted_octave}"
             # Check if sustain mode is on for this looping note
             sustain_status = "Sustain" if note_info['sustain_option'] else "Normal"
-            slot_label.config(text=f"Slot {i+1}: {display_note_id} ({sustain_status})")
-            # Update octave lock checkbox
-            octave_lock_var = slot_info.get('octave_lock_var')
-            if octave_lock_var:
-                octave_lock_var.set(note_info['octave_locked'])
+            # Display key lock status
+            key_status = f"Key Locked ({used_key})" if note_info['key_locked'] else "Key Unlocked"
+            # Display octave lock status
+            octave_status = f"Octave Locked ({octave})" if note_info['octave_locked'] else "Octave Unlocked"
+            slot_label.config(text=f"Slot {i+1}: {display_note_id} ({sustain_status}, {key_status}, {octave_status})")
+            # Update octave and key lock checkboxes
+            octave_lock_var.set(note_info['octave_locked'])
+            key_lock_var.set(note_info['key_locked'])
         else:
             slot_label.config(text=f"Slot {i+1}: Available")
-            octave_lock_var = slot_info.get('octave_lock_var')
-            if octave_lock_var:
-                octave_lock_var.set(False)
+            octave_lock_var.set(False)
+            key_lock_var.set(False)
 
 def start_harp():
     """Start the harp application."""
