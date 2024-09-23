@@ -35,7 +35,7 @@ max_overlaps = 5
 
 # New Global Variables for Looping Functionality
 loop_mode = False         # Indicates if loop mode is active
-max_loops = 5             # Maximum number of looping notes
+max_loops = 8             # Maximum number of looping notes
 
 input_to_note = {
     '`': "C",
@@ -61,6 +61,11 @@ last_shift_r_time = 0
 
 # Define a cooldown period in seconds
 shift_cooldown = 0.2  # 200 milliseconds
+
+# New Global Variables for Looping Note Slots
+looping_note_slots = [None] * max_loops  # Initialize slots based on max_loops
+
+advanced_menu_window = None  # Reference to the advanced menu window
 
 if __name__ == "__main__":
     LLGui.main_menu()

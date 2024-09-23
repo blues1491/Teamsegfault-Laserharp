@@ -69,8 +69,23 @@ def advanced_menu():
     menu.title("Advanced Options")
     menu.attributes('-fullscreen', True)
 
-    tk.Label(menu, text="Select Key").pack(pady=padding_y)
-    key_dropdown = ttk.Combobox(menu, values=LLMain.keys, state="readonly")
+    # Store the reference to the advanced menu window
+    LLMain.advanced_menu_window = menu
+
+    # Create a frame inside the advanced menu for layout
+    advanced_frame = tk.Frame(menu)
+    advanced_frame.pack(expand=True, fill='both', padx=padding_x, pady=padding_y)
+
+    # Divide the advanced frame into columns
+    advanced_frame.grid_columnconfigure(0, weight=1)
+    advanced_frame.grid_columnconfigure(1, weight=1)
+
+    # Left side: Key selection and other controls
+    controls_frame = tk.Frame(advanced_frame)
+    controls_frame.grid(row=0, column=0, sticky='nsew')
+
+    tk.Label(controls_frame, text="Select Key").pack(pady=padding_y)
+    key_dropdown = ttk.Combobox(controls_frame, values=LLMain.keys, state="readonly")
     key_dropdown.set(LLMain.current_key)
     key_dropdown.bind(
         "<<ComboboxSelected>>",
@@ -87,7 +102,7 @@ def advanced_menu():
             audio.preload_sounds()
 
     sustain_check = tk.Checkbutton(
-        menu,
+        controls_frame,
         text="Sustain",
         variable=sustain_var,
         command=update_sustain
@@ -99,11 +114,36 @@ def advanced_menu():
         LLMain.loop_mode = True
 
     loop_button = tk.Button(
-        menu,
+        controls_frame,
         text="Loop Next Note",
         command=activate_loop_mode
     )
     loop_button.pack(pady=padding_y)
+
+    # Right side: Looping notes display
+    looping_frame = tk.Frame(advanced_frame)
+    looping_frame.grid(row=0, column=1, sticky='nsew')
+
+    tk.Label(looping_frame, text="Looping Notes Slots").pack(pady=padding_y)
+
+    # Reset the slot frames list
+    LLMain.looping_slot_frames = []
+
+    for i in range(LLMain.max_loops):
+        slot_frame = tk.Frame(looping_frame, relief='sunken', borderwidth=1)
+        slot_frame.pack(fill='x', pady=padding_y/4)
+
+        slot_label = tk.Label(slot_frame, text=f"Slot {i+1}: Available")
+        slot_label.pack(side='left', padx=padding_x/2)
+
+        # Store both frame and label for future updates
+        LLMain.looping_slot_frames.append({'frame': slot_frame, 'label': slot_label})
+
+    # Bind a custom event to update the display
+    menu.bind('<<UpdateLoopingNotesDisplay>>', update_looping_notes_display)
+
+    # Call update_looping_notes_display to initialize the display
+    update_looping_notes_display()
 
     button_frame = tk.Frame(menu)
     button_frame.pack(side=tk.BOTTOM, pady=padding_y)
@@ -119,9 +159,56 @@ def advanced_menu():
         menu.bind("<KeyPress>", audio.key_press)
         menu.bind("<KeyRelease>", audio.key_release)
 
+    # Handle the advanced menu closing
+    def on_advanced_menu_close():
+        LLMain.advanced_menu_window = None
+        menu.destroy()
+
+    menu.protocol("WM_DELETE_WINDOW", on_advanced_menu_close)
+
     # Ensure the window remains on top and modal
     menu.grab_set()
     root.wait_window(menu)
+
+def looping_notes_display():
+    """Create a display for looping note slots."""
+    looping_frame = tk.Frame(main_frame)
+    looping_frame.grid(row=0, column=3, rowspan=2, sticky='nsew', padx=padding_x, pady=padding_y)
+    main_frame.grid_columnconfigure(3, weight=1)
+
+    tk.Label(looping_frame, text="Looping Notes Slots").pack(pady=padding_y)
+
+    # Create a frame for each slot
+    LLMain.looping_slot_frames = []
+
+    for i in range(LLMain.max_loops):
+        slot_frame = tk.Frame(looping_frame, relief='sunken', borderwidth=1)
+        slot_frame.pack(fill='x', pady=padding_y/4)
+
+        slot_label = tk.Label(slot_frame, text=f"Slot {i+1}: Available")
+        slot_label.pack(side='left', padx=padding_x/2)
+
+        # Store both frame and label for future updates
+        LLMain.looping_slot_frames.append({'frame': slot_frame, 'label': slot_label})
+    
+    # Bind the custom event
+    root.bind('<<UpdateLoopingNotesDisplay>>', update_looping_notes_display)
+
+
+def update_looping_notes_display(event=None):
+    """Update the display of looping note slots."""
+    if not hasattr(LLMain, 'looping_slot_frames'):
+        return  # Advanced menu is not open
+
+    for i, slot_info in enumerate(LLMain.looping_slot_frames):
+        note_id = LLMain.looping_note_slots[i]
+        slot_label = slot_info['label']
+        if note_id is not None:
+            slot_label.config(text=f"Slot {i+1}: {note_id}")
+        else:
+            slot_label.config(text=f"Slot {i+1}: Available")
+
+
 
 def start_harp():
     """Start the harp application."""

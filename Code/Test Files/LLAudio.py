@@ -215,23 +215,37 @@ def stop_sustain_sound(key):
         del LLMain.scheduled_tasks[key]
 
 def start_looping_note(note_id, key):
-    """Start looping a note. If sustain is on, use sustain settings; otherwise, play normally."""
+    """Start looping a note and assign it to an available slot."""
+    # Find an available slot
+    try:
+        slot_index = LLMain.looping_note_slots.index(None)
+    except ValueError:
+        print("No available looping note slots.")
+        return
+
     sounds = LLMain.sound_objects[key]
-    
+
     if LLMain.sustain_option:
         # Play the attack sound and schedule sustain playbacks
         sounds['attack'].play()
         attack_length = int(sounds['attack'].get_length() * 1000)
         task_id = LLMain.root.after(attack_length, lambda: schedule_loop_sustain_play(key, note_id))
         channel = pygame.mixer.find_channel()
-        LLMain.looping_notes[note_id] = {'task_id': task_id, 'channel': channel, 'key': key}
+        LLMain.looping_notes[note_id] = {'task_id': task_id, 'channel': channel, 'key': key, 'slot': slot_index}
         print(f"Started looping note with sustain: {note_id}")
     else:
         # Play the original sound back to back without sustain settings
         channel = pygame.mixer.find_channel()
         task_id = LLMain.root.after(0, lambda: schedule_normal_loop_play(key, note_id))
-        LLMain.looping_notes[note_id] = {'task_id': task_id, 'channel': channel, 'key': key}
+        LLMain.looping_notes[note_id] = {'task_id': task_id, 'channel': channel, 'key': key, 'slot': slot_index}
         print(f"Started looping note normally: {note_id}")
+
+    # Update the looping note slot
+    LLMain.looping_note_slots[slot_index] = note_id
+
+     # Update the GUI display if advanced menu is open
+    if LLMain.advanced_menu_window:
+        LLMain.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')
 
 def schedule_normal_loop_play(key, note_id):
     """Schedule the next playback of the original sound for normal looping."""
@@ -261,16 +275,17 @@ def schedule_loop_sustain_play(key, note_id):
         pass
 
 def stop_looping_note(note_id):
-    """Stop looping a note."""
+    """Stop looping a note and free its slot."""
     if note_id in LLMain.looping_notes:
         # Cancel scheduled tasks
         task_info = LLMain.looping_notes[note_id]
         task_id = task_info.get('task_id')
         channel = task_info.get('channel')
-        
+        slot_index = task_info.get('slot')
+
         if task_id:
             LLMain.root.after_cancel(task_id)
-        
+
         if channel:
             if LLMain.sustain_option:
                 # Apply fade out if sustain is on
@@ -281,11 +296,21 @@ def stop_looping_note(note_id):
             else:
                 # Stop immediately if sustain is off
                 channel.stop()
-        
+
+        # Remove looping note
         del LLMain.looping_notes[note_id]
+
+        # Free the slot
+        LLMain.looping_note_slots[slot_index] = None
+
+        # Update the GUI display
+        if LLMain.advanced_menu_window:
+            LLMain.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')
+
         print(f"Stopped looping note: {note_id}")
     else:
         print(f"Note {note_id} is not currently looping.")
+
 
 def start_harp():
     """Initialize and start the harp application."""
