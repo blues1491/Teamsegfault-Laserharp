@@ -1,7 +1,11 @@
+# LLGui.py
+
 import tkinter as tk
 from tkinter import ttk
 import LLMain
-import LLAudio as audio
+import LLAudio
+import LLLooping
+import LLHelpers
 
 def octave_buttons():
     """Create octave switcher buttons."""
@@ -16,7 +20,7 @@ def octave_buttons():
         octave_button = tk.Button(
             octave_buttons_frame,
             text=f"Octave {octave}",
-            command=lambda o=octave: audio.change_octave(o),
+            command=lambda o=octave: LLAudio.change_octave(o),
             width=20,
             activebackground="blue",
             activeforeground="white"
@@ -32,7 +36,7 @@ def volume_slider():
         from_=1,
         to=0,
         orient='vertical',
-        command=audio.adjust_volume,
+        command=LLAudio.adjust_volume,
         resolution=.01,
         width=padding_y * 4,
         activebackground="blue",
@@ -56,7 +60,7 @@ def instrument_buttons():
             instrument_button_frame,
             text=f"{instrument}",
             width=20,
-            command=lambda i=instrument: audio.choose_folder(i),
+            command=lambda i=instrument: LLAudio.choose_folder(i),
             activebackground="blue",
             activeforeground="white"
         )
@@ -89,7 +93,7 @@ def advanced_menu():
     key_dropdown.set(LLMain.current_key)
     key_dropdown.bind(
         "<<ComboboxSelected>>",
-        lambda e: audio.change_key(key_dropdown.get())
+        lambda e: LLAudio.change_key(key_dropdown.get())
     )
     key_dropdown.pack(pady=padding_y)
 
@@ -99,7 +103,7 @@ def advanced_menu():
     def update_sustain():
         LLMain.sustain_option = sustain_var.get()
         if LLMain.running:
-            audio.preload_sounds()
+            LLAudio.preload_sounds()
 
     sustain_check = tk.Checkbutton(
         controls_frame,
@@ -120,6 +124,14 @@ def advanced_menu():
     )
     loop_button.pack(pady=padding_y)
 
+    # Stop All Loops button
+    stop_all_button = tk.Button(
+        controls_frame,
+        text="Stop All Loops",
+        command=LLLooping.stop_all_loops
+    )
+    stop_all_button.pack(pady=padding_y)
+
     # Right side: Looping notes display
     looping_frame = tk.Frame(advanced_frame)
     looping_frame.grid(row=0, column=1, sticky='nsew')
@@ -136,8 +148,48 @@ def advanced_menu():
         slot_label = tk.Label(slot_frame, text=f"Slot {i+1}: Available")
         slot_label.pack(side='left', padx=padding_x/2)
 
-        # Store both frame and label for future updates
-        LLMain.looping_slot_frames.append({'frame': slot_frame, 'label': slot_label})
+        # Octave lock checkbox
+        octave_lock_var = tk.BooleanVar()
+        octave_lock_check = tk.Checkbutton(
+            slot_frame,
+            text="Octave Lock",
+            variable=octave_lock_var,
+            command=lambda idx=i: LLLooping.toggle_octave_lock(idx)
+        )
+        octave_lock_check.pack(side='right', padx=padding_x/2)
+
+        # Stop Loop Button
+        stop_loop_button = tk.Button(
+            slot_frame,
+            text="Stop",
+            command=lambda idx=i: LLLooping.stop_loop_by_slot(idx)
+        )
+        stop_loop_button.pack(side='right', padx=padding_x/2)
+
+        # Store frame, label, octave lock var, and sustain var
+        LLMain.looping_slot_frames.append({
+            'frame': slot_frame,
+            'label': slot_label,
+            'octave_lock_var': octave_lock_var,
+        })
+
+    # Add Lock All and Unlock All buttons
+    lock_buttons_frame = tk.Frame(looping_frame)
+    lock_buttons_frame.pack(pady=padding_y)
+
+    lock_all_button = tk.Button(
+        lock_buttons_frame,
+        text="Lock All Octaves",
+        command=LLLooping.lock_all_octaves
+    )
+    lock_all_button.pack(side='left', padx=padding_x/2)
+
+    unlock_all_button = tk.Button(
+        lock_buttons_frame,
+        text="Unlock All Octaves",
+        command=LLLooping.unlock_all_octaves
+    )
+    unlock_all_button.pack(side='right', padx=padding_x/2)
 
     # Bind a custom event to update the display
     menu.bind('<<UpdateLoopingNotesDisplay>>', update_looping_notes_display)
@@ -156,8 +208,8 @@ def advanced_menu():
     ).pack(side=tk.RIGHT, padx=padding_x)
 
     if LLMain.running:
-        menu.bind("<KeyPress>", audio.key_press)
-        menu.bind("<KeyRelease>", audio.key_release)
+        menu.bind("<KeyPress>", LLLooping.key_press)
+        menu.bind("<KeyRelease>", LLLooping.key_release)
 
     # Handle the advanced menu closing
     def on_advanced_menu_close():
@@ -188,12 +240,11 @@ def looping_notes_display():
         slot_label = tk.Label(slot_frame, text=f"Slot {i+1}: Available")
         slot_label.pack(side='left', padx=padding_x/2)
 
-        # Store both frame and label for future updates
+        # Store frame and label
         LLMain.looping_slot_frames.append({'frame': slot_frame, 'label': slot_label})
-    
+
     # Bind the custom event
     root.bind('<<UpdateLoopingNotesDisplay>>', update_looping_notes_display)
-
 
 def update_looping_notes_display(event=None):
     """Update the display of looping note slots."""
@@ -204,22 +255,42 @@ def update_looping_notes_display(event=None):
         note_id = LLMain.looping_note_slots[i]
         slot_label = slot_info['label']
         if note_id is not None:
-            slot_label.config(text=f"Slot {i+1}: {note_id}")
+            note_info = LLMain.looping_notes[note_id]
+            key = note_info['key']
+            original_note = LLMain.input_to_note[key]
+            # Determine the correct octave
+            if note_info['octave_locked']:
+                octave = note_info['locked_octave']
+            else:
+                octave = LLMain.current_octave
+            if key == '=':
+                octave += 1
+            # Transpose the note based on the current key
+            transposed_note, adjusted_octave = LLHelpers.transpose_note(original_note, LLMain.current_key, octave)
+            display_note_id = f"{transposed_note}{adjusted_octave}"
+            # Check if sustain mode is on for this looping note
+            sustain_status = "Sustain" if note_info['sustain_option'] else "Normal"
+            slot_label.config(text=f"Slot {i+1}: {display_note_id} ({sustain_status})")
+            # Update octave lock checkbox
+            octave_lock_var = slot_info.get('octave_lock_var')
+            if octave_lock_var:
+                octave_lock_var.set(note_info['octave_locked'])
         else:
             slot_label.config(text=f"Slot {i+1}: Available")
-
-
+            octave_lock_var = slot_info.get('octave_lock_var')
+            if octave_lock_var:
+                octave_lock_var.set(False)
 
 def start_harp():
     """Start the harp application."""
-    audio.start_harp()
+    LLAudio.start_harp()
     start_button.config(text="Stop", command=stop_harp)
-    root.bind("<KeyPress>", audio.key_press)
-    root.bind("<KeyRelease>", audio.key_release)
+    root.bind("<KeyPress>", LLLooping.key_press)
+    root.bind("<KeyRelease>", LLLooping.key_release)
 
 def stop_harp():
     """Stop the harp application."""
-    audio.stop_harp()
+    LLAudio.stop_harp()
     start_button.config(text="Start", command=start_harp)
     root.unbind("<KeyPress>")
     root.unbind("<KeyRelease>")

@@ -1,42 +1,30 @@
+# dependencies: pip install pygame pydub
+
+# LLMain.py
+
 import pygame
 import os
-import LLGui 
+import LLGui
 
+# Initialize Pygame mixer
 pygame.mixer.init()
 
 # Global Variables
 running = False
 
+# Paths and Folders
 base_folder = "../Sound Samples/"
-current_folder = base_folder + "Harp/"
+current_folder = os.path.join(base_folder, "Harp")
 instrument_folders = [
     f for f in os.listdir(base_folder) if os.path.isdir(os.path.join(base_folder, f))
 ]
 
+# Audio Settings
 volume = 0.5
 sound_objects = {}
-key_status = {}
 sustain_lengths = {}
-scheduled_tasks = {}
-looping_notes = {}
 
-octave_range = [2, 3, 4, 5]
-current_octave = 4
-
-keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
-current_key = "C"
-
-fade_in_duration = 500    # milliseconds
-fade_out_duration = 500   # milliseconds
-attack_duration = 100     # milliseconds
-sustain_interval = 1000   # milliseconds
-sustain_option = False
-max_overlaps = 5
-
-# New Global Variables for Looping Functionality
-loop_mode = False         # Indicates if loop mode is active
-max_loops = 8             # Maximum number of looping notes
-
+# Key Mappings and Notes
 input_to_note = {
     '`': "C",
     '1': "C#",
@@ -52,20 +40,39 @@ input_to_note = {
     '-': "B",
     '=': "C"
 }
+keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+current_key = "C"
 
-root = None
+# Octave Settings
+octave_range = [2, 3, 4, 5]
+current_octave = 4
 
-# New variables to track the time of the last shift key press
-last_shift_l_time = 0
-last_shift_r_time = 0
+# Sustain and Overlap Settings
+fade_in_duration = 500    # milliseconds
+fade_out_duration = 500   # milliseconds
+attack_duration = 100     # milliseconds
+sustain_interval = 1000   # milliseconds
+sustain_option = False
+max_overlaps = 5
 
-# Define a cooldown period in seconds
-shift_cooldown = 0.2  # 200 milliseconds
-
-# New Global Variables for Looping Note Slots
+# Looping Notes Settings
+loop_mode = False         # Indicates if loop mode is active
+max_loops = 8             # Maximum number of looping notes
+looping_notes = {}
 looping_note_slots = [None] * max_loops  # Initialize slots based on max_loops
 
+# GUI and Event Handling
+root = None
 advanced_menu_window = None  # Reference to the advanced menu window
+
+# Key Status and Scheduling
+key_status = {}
+scheduled_tasks = {}
+
+# Shift Key Timing for Octave Changes
+last_shift_l_time = 0
+last_shift_r_time = 0
+shift_cooldown = 0.2  # 200 milliseconds
 
 if __name__ == "__main__":
     LLGui.main_menu()
