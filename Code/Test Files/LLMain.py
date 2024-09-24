@@ -69,10 +69,5 @@ advanced_menu_window = None  # Reference to the advanced menu window
 key_status = {}
 scheduled_tasks = {}
 
-# Shift Key Timing for Octave Changes
-last_shift_l_time = 0
-last_shift_r_time = 0
-shift_cooldown = 0.2  # 200 milliseconds
-
 if __name__ == "__main__":
     LLGui.main_menu()
