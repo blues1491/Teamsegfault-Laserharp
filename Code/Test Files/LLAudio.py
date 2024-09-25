@@ -184,24 +184,6 @@ def choose_folder(folder_name):
     if LLMain.running:
         preload_sounds()
 
-def start_harp():
-    """Initialize and start the harp application."""
-    LLMain.running = True
-    preload_sounds()
-
-def stop_harp():
-    """Stop the harp application and clean up."""
-    LLMain.running = False
-    pygame.mixer.stop()
-    # Stop all looping notes and cancel scheduled tasks
-    for note_id in list(LLMain.looping_notes.keys()):
-        import LLLooping  # Import here to avoid circular import
-        LLLooping.stop_looping_note(note_id)
-    # Cancel any scheduled sustain plays
-    for key in list(LLMain.scheduled_tasks.keys()):
-        LLMain.root.after_cancel(LLMain.scheduled_tasks[key])
-    LLMain.scheduled_tasks.clear()
-
 def schedule_sustain_play(key):
     """Schedule the sustain sound to play with overlaps."""
     if LLMain.key_status.get(key, False):
