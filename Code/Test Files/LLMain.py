@@ -53,7 +53,11 @@ fade_out_duration = 500   # milliseconds
 attack_duration = 100     # milliseconds
 sustain_interval = 1000   # milliseconds
 sustain_option = False
+<<<<<<< HEAD
 max_overlaps = 10
+=======
+max_overlaps = 8
+>>>>>>> d00fd5753c3c9bb499e565369a2f451650d1439a
 
 # Looping Notes Settings
 loop_mode = False         # Indicates if loop mode is active
@@ -69,6 +73,7 @@ advanced_menu_window = None  # Reference to the advanced menu window
 key_status = {}
 scheduled_tasks = {}
 
+<<<<<<< HEAD
 # Shift Key Timing for Octave Changes
 last_shift_l_time = 0
 last_shift_r_time = 0
@@ -81,5 +86,7 @@ scheduled_tasks = {}
 # Store active channels for sustain sounds
 active_sustain_channels = {}
 
+=======
+>>>>>>> d00fd5753c3c9bb499e565369a2f451650d1439a
 if __name__ == "__main__":
     LLGui.main_menu()

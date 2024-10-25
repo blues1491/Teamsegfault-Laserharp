@@ -2,8 +2,8 @@
 
 import LLMain
 import LLAudio
-import LLHelpers
 import pygame
+<<<<<<< HEAD
 import time
 import os
 
@@ -47,6 +47,8 @@ def handle_shift(direction, current_time):
                 print(f"Octave increased to {new_octave}")
             else:
                 print("Cannot increase octave further.")
+=======
+>>>>>>> d00fd5753c3c9bb499e565369a2f451650d1439a
 
 def handle_loop_mode(note_id, key):
     """Handle looping mode key presses."""
@@ -64,6 +66,7 @@ def handle_loop_mode(note_id, key):
     LLMain.loop_mode = False
     print("Loop mode deactivated.")
 
+<<<<<<< HEAD
 def handle_normal_key_press(note_id, key, octave):
     """Handle normal key presses."""
     # Check if a looping note matches this key, octave, and instrument
@@ -154,6 +157,8 @@ def stop_sustain_sound(key):
     if key in LLMain.scheduled_tasks:
         del LLMain.scheduled_tasks[key]
 
+=======
+>>>>>>> d00fd5753c3c9bb499e565369a2f451650d1439a
 def start_looping_note(note_id, key):
     """Start looping a note and assign it to an available slot."""
     # Find an available slot
