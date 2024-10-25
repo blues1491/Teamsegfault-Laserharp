@@ -5,6 +5,7 @@ from pydub import AudioSegment
 from io import BytesIO
 import os
 import LLMain
+import LLHelpers
 
 # Initialize the mixer with more channels if needed
 pygame.mixer.set_num_channels(64)

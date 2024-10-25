@@ -1,7 +1,8 @@
 # LLGui.py
 
-import tkinter as tk
+import tkinter
 from tkinter import ttk
+import os
 
 import pygame
 import LLMain
@@ -121,8 +122,8 @@ def advanced_menu():
         slot_label.pack(side='left', padx=padding_x/2)
 
         # Instrument lock checkbox
-        instrument_lock_var = tk.BooleanVar()
-        instrument_lock_check = tk.Checkbutton(
+        instrument_lock_var = tkinter.BooleanVar()
+        instrument_lock_check = tkinter.Checkbutton(
             slot_frame,
             text="Instrument Lock",
             variable=instrument_lock_var,
@@ -131,8 +132,8 @@ def advanced_menu():
         instrument_lock_check.pack(side='right', padx=padding_x/2)
 
         # Instrument lock checkbox
-        instrument_lock_var = tk.BooleanVar()
-        instrument_lock_check = tk.Checkbutton(
+        instrument_lock_var = tkinter.BooleanVar()
+        instrument_lock_check = tkinter.Checkbutton(
             slot_frame,
             text="Instrument Lock",
             variable=instrument_lock_var,
@@ -164,17 +165,17 @@ def advanced_menu():
         })
 
     # Add Lock All and Unlock All buttons for instruments
-    instrument_lock_buttons_frame = tk.Frame(looping_frame)
+    instrument_lock_buttons_frame = tkinter.Frame(looping_frame)
     instrument_lock_buttons_frame.pack(pady=padding_y)
 
-    lock_all_instruments_button = tk.Button(
+    lock_all_instruments_button = tkinter.Button(
         instrument_lock_buttons_frame,
         text="Lock All Instruments",
         command=LLLooping.lock_all_instruments
     )
     lock_all_instruments_button.pack(side='left', padx=padding_x/2)
 
-    unlock_all_instruments_button = tk.Button(
+    unlock_all_instruments_button = tkinter.Button(
         instrument_lock_buttons_frame,
         text="Unlock All Instruments",
         command=LLLooping.unlock_all_instruments
@@ -306,7 +307,7 @@ def main_menu():
     """Set up the main GUI layout."""
     global start_button
     global root
-    root = tkinter.Tk()
+    root = tkinter.tkinter()
     LLMain.root = root
     root.title("Laser Harp Main Menu")
     root.attributes('-fullscreen', True)
