@@ -45,7 +45,7 @@ current_key = "C"
 
 # Octave Settings
 octave_range = [2, 3, 4, 5]
-current_octave = 4
+current_octave = 3
 
 # Sustain and Overlap Settings
 fade_in_duration = 500    # milliseconds
@@ -53,11 +53,11 @@ fade_out_duration = 500   # milliseconds
 attack_duration = 100     # milliseconds
 sustain_interval = 1000   # milliseconds
 sustain_option = False
-max_overlaps = 5
+max_overlaps = 10
 
 # Looping Notes Settings
 loop_mode = False         # Indicates if loop mode is active
-max_loops = 8             # Maximum number of looping notes
+max_loops = 13             # Maximum number of looping notes
 looping_notes = {}
 looping_note_slots = [None] * max_loops  # Initialize slots based on max_loops
 
@@ -73,6 +73,13 @@ scheduled_tasks = {}
 last_shift_l_time = 0
 last_shift_r_time = 0
 shift_cooldown = 0.2  # 200 milliseconds
+
+# Key Status and Scheduling
+key_status = {}
+scheduled_tasks = {}
+
+# Store active channels for sustain sounds
+active_sustain_channels = {}
 
 if __name__ == "__main__":
     LLGui.main_menu()

@@ -1,5 +1,6 @@
 # LLGui.py
 
+import os
 import tkinter as tk
 from tkinter import ttk
 import LLMain
@@ -148,6 +149,16 @@ def advanced_menu():
         slot_label = tk.Label(slot_frame, text=f"Slot {i+1}: Available")
         slot_label.pack(side='left', padx=padding_x/2)
 
+        # Instrument lock checkbox
+        instrument_lock_var = tk.BooleanVar()
+        instrument_lock_check = tk.Checkbutton(
+            slot_frame,
+            text="Instrument Lock",
+            variable=instrument_lock_var,
+            command=lambda idx=i: LLLooping.toggle_instrument_lock(idx)
+        )
+        instrument_lock_check.pack(side='right', padx=padding_x/2)
+
         # Key lock checkbox
         key_lock_var = tk.BooleanVar()
         key_lock_check = tk.Checkbutton(
@@ -181,8 +192,28 @@ def advanced_menu():
             'frame': slot_frame,
             'label': slot_label,
             'octave_lock_var': octave_lock_var,
-            'key_lock_var': key_lock_var  # Store the key lock variable
+            'key_lock_var': key_lock_var,
+            'instrument_lock_var': instrument_lock_var  # Store the instrument lock variable
         })
+
+    # Add Lock All and Unlock All buttons for instruments
+    instrument_lock_buttons_frame = tk.Frame(looping_frame)
+    instrument_lock_buttons_frame.pack(pady=padding_y)
+
+    lock_all_instruments_button = tk.Button(
+        instrument_lock_buttons_frame,
+        text="Lock All Instruments",
+        command=LLLooping.lock_all_instruments
+    )
+    lock_all_instruments_button.pack(side='left', padx=padding_x/2)
+
+    unlock_all_instruments_button = tk.Button(
+        instrument_lock_buttons_frame,
+        text="Unlock All Instruments",
+        command=LLLooping.unlock_all_instruments
+    )
+    unlock_all_instruments_button.pack(side='right', padx=padding_x/2)
+
 
     # Add Lock All and Unlock All buttons for octaves
     octave_lock_buttons_frame = tk.Frame(looping_frame)
@@ -261,6 +292,7 @@ def update_looping_notes_display(event=None):
         slot_label = slot_info['label']
         octave_lock_var = slot_info['octave_lock_var']
         key_lock_var = slot_info['key_lock_var']
+        instrument_lock_var = slot_info['instrument_lock_var']
         if note_id is not None:
             note_info = LLMain.looping_notes[note_id]
             key = note_info['key']
@@ -274,23 +306,29 @@ def update_looping_notes_display(event=None):
                 octave += 1
             # Use locked key if key is locked
             used_key = note_info['locked_key'] if note_info['key_locked'] else LLMain.current_key
+            # Use locked instrument if instrument is locked
+            used_instrument = note_info['locked_instrument'] if note_info['instrument_locked'] else LLMain.current_folder
+            instrument_name = os.path.basename(used_instrument)
             # Transpose the note based on the used key
             transposed_note, adjusted_octave = LLHelpers.transpose_note(original_note, used_key, octave)
             display_note_id = f"{transposed_note}{adjusted_octave}"
             # Check if sustain mode is on for this looping note
             sustain_status = "Sustain" if note_info['sustain_option'] else "Normal"
-            # Display key lock status
+            # Display lock statuses
             key_status = f"Key Locked ({used_key})" if note_info['key_locked'] else "Key Unlocked"
-            # Display octave lock status
             octave_status = f"Octave Locked ({octave})" if note_info['octave_locked'] else "Octave Unlocked"
-            slot_label.config(text=f"Slot {i+1}: {display_note_id} ({sustain_status}, {key_status}, {octave_status})")
-            # Update octave and key lock checkboxes
+            instrument_status = f"Instrument Locked ({instrument_name})" if note_info['instrument_locked'] else "Instrument Unlocked"
+            slot_label.config(text=f"Slot {i+1}: {display_note_id} ({sustain_status}, {key_status}, {octave_status}, {instrument_status})")
+            # Update lock checkboxes
             octave_lock_var.set(note_info['octave_locked'])
             key_lock_var.set(note_info['key_locked'])
+            instrument_lock_var.set(note_info['instrument_locked'])
         else:
             slot_label.config(text=f"Slot {i+1}: Available")
             octave_lock_var.set(False)
             key_lock_var.set(False)
+            instrument_lock_var.set(False)
+
 
 def start_harp():
     """Start the harp application."""

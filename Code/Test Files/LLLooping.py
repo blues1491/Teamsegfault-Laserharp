@@ -5,11 +5,12 @@ import LLAudio
 import LLHelpers
 import pygame
 import time
+import os
 
 def key_press(event):
     """Handle key press events."""
     keysym = event.keysym
-    key = event.char
+    key = event.char.upper()  # Ensure key is uppercase
     current_time = time.time()
 
     if keysym == 'Shift_L':
@@ -20,12 +21,12 @@ def key_press(event):
         octave = LLMain.current_octave
         if key == '=':
             octave += 1
-        note_id = LLHelpers.get_note_identifier(key, octave)
+        # Pass the current instrument to get a unique note_id
+        unique_note_id = LLHelpers.get_note_identifier(key, octave, LLMain.current_folder)
         if LLMain.loop_mode:
-            handle_loop_mode(note_id, key)
+            handle_loop_mode(unique_note_id, key)
         else:
-            handle_normal_key_press(note_id, key)
-
+            handle_normal_key_press(unique_note_id, key, octave)
 def handle_shift(direction, current_time):
     """Handle octave changes with shift keys."""
     if direction == 'left':
@@ -51,7 +52,7 @@ def handle_loop_mode(note_id, key):
     """Handle looping mode key presses."""
     if note_id in LLMain.looping_notes:
         # Note is already looping, stop looping it
-        stop_looping_note_by_key(note_id)
+        stop_looping_note_by_key(note_id, key, LLMain.current_octave)
     else:
         # Check if max loops reached
         if len(LLMain.looping_notes) >= LLMain.max_loops:
@@ -63,11 +64,13 @@ def handle_loop_mode(note_id, key):
     LLMain.loop_mode = False
     print("Loop mode deactivated.")
 
-def handle_normal_key_press(note_id, key):
+def handle_normal_key_press(note_id, key, octave):
     """Handle normal key presses."""
-    if note_id in LLMain.looping_notes:
+    # Check if a looping note matches this key, octave, and instrument
+    matching_note_id = find_matching_looping_note_id(key, octave)
+    if matching_note_id:
         # Stop the looping note
-        stop_looping_note_by_key(note_id)
+        stop_looping_note_by_key(matching_note_id, key, octave)
     else:
         if not LLMain.key_status.get(key, False):
             LLMain.key_status[key] = True
@@ -93,10 +96,10 @@ def key_release(event):
             octave = LLMain.current_octave
             if key == '=':
                 octave += 1
-            note_id = LLHelpers.get_note_identifier(key, octave)
             if LLMain.sustain_option:
                 # If the note is looping, do not stop it
-                if note_id in LLMain.looping_notes:
+                matching_note_id = find_matching_looping_note_id(key, octave)
+                if matching_note_id:
                     pass
                 else:
                     # Cancel scheduled sustain plays
@@ -132,25 +135,20 @@ def play_sustain_sound(key):
     channel = pygame.mixer.find_channel()
     if channel:
         channel.play(sustain_sound)
+        # Store the channel
+        if key not in LLMain.active_sustain_channels:
+            LLMain.active_sustain_channels[key] = []
+        LLMain.active_sustain_channels[key].append(channel)
 
 def stop_sustain_sound(key):
     """Fade out all channels playing the sustain sound for this key."""
-    octave = LLMain.current_octave
-    if key == '=':
-        octave += 1
-    note_id = LLHelpers.get_note_identifier(key, octave)
-    if note_id in LLMain.looping_notes:
-        # Do not stop the sound if it's looping
-        return
-
-    sustain_sound = LLMain.sound_objects[key]['sustain']
-    for task_info in LLMain.looping_notes.values():
-        channel = task_info.get('channel')
-        if channel and channel.get_sound() == sustain_sound:
+    if key in LLMain.active_sustain_channels:
+        for channel in LLMain.active_sustain_channels[key]:
             if LLMain.fade_out_duration > 0:
                 channel.fadeout(LLMain.fade_out_duration)
             else:
                 channel.stop()
+        LLMain.active_sustain_channels[key] = []
 
     # Remove scheduled stop
     if key in LLMain.scheduled_tasks:
@@ -169,6 +167,10 @@ def start_looping_note(note_id, key):
     octave_locked = False
     locked_octave = LLMain.current_octave
 
+    # Store whether the instrument is locked for this note (default to False)
+    instrument_locked = False
+    locked_instrument = LLMain.current_folder
+
     # Create the note_info dictionary
     note_info = {
         'key': key,
@@ -176,21 +178,29 @@ def start_looping_note(note_id, key):
         'octave_locked': octave_locked,
         'locked_octave': locked_octave,
         'sustain_option': LLMain.sustain_option,
-        'key_locked': False,       # Initialize as not key-locked
-        'locked_key': None         # No locked key yet
+        'key_locked': False,               # Initialize as not key-locked
+        'locked_key': None,                # No locked key yet
+        'instrument_locked': False,        # Initialize as not instrument-locked
+        'locked_instrument': None,         # No locked instrument yet
+        'created_octave': LLMain.current_octave,
+        'created_instrument': LLMain.current_folder,
+        'active_channels': [],             # Initialize the list of active channels
     }
 
+    # Generate a unique note_id including the instrument
+    unique_note_id = LLHelpers.get_note_identifier(key, LLMain.current_octave, LLMain.current_folder)
+
     # Add note_info to looping_notes
-    LLMain.looping_notes[note_id] = note_info
+    LLMain.looping_notes[unique_note_id] = note_info
 
     # Preload the sound for this looping note
-    LLAudio.preload_sound_for_looping_note(note_id, key)
+    LLAudio.preload_sound_for_looping_note(unique_note_id, key, instrument=LLMain.current_folder)
 
     # Now get the sounds from note_info
     sounds = note_info.get('sounds', {})
     if not sounds:
-        print(f"Failed to load sounds for looping note: {note_id}")
-        del LLMain.looping_notes[note_id]
+        print(f"Failed to load sounds for looping note: {unique_note_id}")
+        del LLMain.looping_notes[unique_note_id]
         LLMain.looping_note_slots[slot_index] = None
         return
 
@@ -198,21 +208,19 @@ def start_looping_note(note_id, key):
         # Play the attack sound and schedule sustain playbacks
         sounds['attack'].play()
         attack_length = int(sounds['attack'].get_length() * 1000)
-        task_id = LLMain.root.after(attack_length, lambda: schedule_loop_sustain_play(key, note_id))
-        channel = pygame.mixer.find_channel()
-        print(f"Started looping note with sustain: {note_id}")
+        task_id = LLMain.root.after(attack_length, lambda: schedule_loop_sustain_play(key, unique_note_id))
+        print(f"Started looping note with sustain: {unique_note_id}")
     else:
         # Play the original sound back to back without sustain settings
-        channel = pygame.mixer.find_channel()
-        task_id = LLMain.root.after(0, lambda: schedule_normal_loop_play(key, note_id))
-        print(f"Started looping note normally: {note_id}")
+        sounds['original'].play()
+        task_id = LLMain.root.after(0, lambda: schedule_normal_loop_play(key, unique_note_id))
+        print(f"Started looping note normally: {unique_note_id}")
 
-    # Update note_info with task_id and channel
+    # Update note_info with task_id
     note_info['task_id'] = task_id
-    note_info['channel'] = channel
 
     # Update the looping note slot
-    LLMain.looping_note_slots[slot_index] = note_id
+    LLMain.looping_note_slots[slot_index] = unique_note_id
 
     # Update the GUI display if advanced menu is open
     if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
@@ -254,11 +262,52 @@ def play_sustain_sound_loop(note_info):
     channel = pygame.mixer.find_channel()
     if channel:
         channel.play(sustain_sound)
+        # Store the channel
+        note_info['active_channels'].append(channel)
 
-def stop_looping_note_by_key(note_id):
-    """Stop looping a note when the user plays the note again."""
-    stop_looping_note(note_id)
-    print(f"Stopped looping note by key press: {note_id}")
+def stop_looping_note_by_key(note_id, key, octave):
+    """Stop looping a note when the user plays the note again with matching settings."""
+    note_info = LLMain.looping_notes[note_id]
+
+    # Check if the key, octave, and instrument match
+    if note_matches_current_settings(note_info, key, octave):
+        stop_looping_note(note_id)
+        print(f"Stopped looping note by key press: {note_id}")
+    else:
+        print(f"Pressed key does not match looping note settings; note continues.")
+
+def note_matches_current_settings(note_info, key, octave):
+    """Check if the pressed key, octave, and instrument match the looping note's settings."""
+    # Check key
+    if note_info['key_locked']:
+        expected_key = note_info['key']
+    else:
+        expected_key = note_info['key']
+
+    if key != expected_key:
+        return False
+
+    # Check octave
+    if note_info['octave_locked']:
+        expected_octave = note_info['locked_octave']
+    else:
+        expected_octave = note_info['created_octave']
+
+    if octave != expected_octave:
+        return False
+
+    # Check instrument
+    if note_info['instrument_locked']:
+        expected_instrument = note_info['locked_instrument']
+    else:
+        expected_instrument = note_info['created_instrument']
+
+    current_instrument = LLMain.current_folder
+
+    if current_instrument != expected_instrument:
+        return False
+
+    return True
 
 def stop_looping_note(note_id):
     """Stop looping a note and free its slot."""
@@ -277,6 +326,15 @@ def stop_looping_note(note_id):
                 channel.fadeout(LLMain.fade_out_duration)
             else:
                 channel.stop()
+
+        # Fade out any active sustain channels
+        if 'active_channels' in note_info:
+            for ch in note_info['active_channels']:
+                if LLMain.fade_out_duration > 0:
+                    ch.fadeout(LLMain.fade_out_duration)
+                else:
+                    ch.stop()
+            note_info['active_channels'] = []
 
         # Remove looping note
         del LLMain.looping_notes[note_id]
@@ -306,6 +364,20 @@ def stop_all_loops():
     for note_id in list(LLMain.looping_notes.keys()):
         stop_looping_note(note_id)
     print("All looping notes have been stopped.")
+
+def find_matching_looping_note_id(key, octave):
+    """Find a looping note that matches the current key, octave, and instrument."""
+    for note_id, note_info in LLMain.looping_notes.items():
+        if note_matches_current_settings(note_info, key, octave):
+            return note_id
+    return None
+
+def find_matching_looping_note_id(key, octave):
+    """Find a looping note that matches the current key, octave, and instrument."""
+    for note_id, note_info in LLMain.looping_notes.items():
+        if note_matches_current_settings(note_info, key, octave):
+            return note_id
+    return None
 
 def toggle_octave_lock(slot_index):
     """Toggle the octave lock for a looping note in a given slot."""
@@ -393,6 +465,50 @@ def unlock_all_keys():
             print(f"Key unlocked for note {note_id}")
             LLAudio.preload_sound_for_looping_note(note_id, note_info['key'])
     print("All keys unlocked.")
+    # Update the GUI display
+    if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
+        LLMain.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')
+
+def toggle_instrument_lock(slot_index):
+    """Toggle the instrument lock for a looping note in a given slot."""
+    note_id = LLMain.looping_note_slots[slot_index]
+    if note_id:
+        note_info = LLMain.looping_notes[note_id]
+        note_info['instrument_locked'] = not note_info.get('instrument_locked', False)
+        if note_info['instrument_locked']:
+            note_info['locked_instrument'] = LLMain.current_folder
+            print(f"Instrument locked for note {note_id} at instrument {os.path.basename(note_info['locked_instrument'])}")
+        else:
+            note_info['locked_instrument'] = None
+            print(f"Instrument unlocked for note {note_id}")
+        # Reload sound with the locked or current instrument
+        LLAudio.preload_sound_for_looping_note(note_id, note_info['key'])
+        # Update the GUI display
+        if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
+            LLMain.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')
+
+def lock_all_instruments():
+    """Lock the instrument for all looping notes."""
+    for note_id, note_info in LLMain.looping_notes.items():
+        if not note_info.get('instrument_locked', False):
+            note_info['instrument_locked'] = True
+            note_info['locked_instrument'] = LLMain.current_folder
+            print(f"Instrument locked for note {note_id} at instrument {os.path.basename(note_info['locked_instrument'])}")
+            LLAudio.preload_sound_for_looping_note(note_id, note_info['key'])
+    print("All instruments locked.")
+    # Update the GUI display
+    if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
+        LLMain.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')
+
+def unlock_all_instruments():
+    """Unlock the instrument for all looping notes."""
+    for note_id, note_info in LLMain.looping_notes.items():
+        if note_info.get('instrument_locked', False):
+            note_info['instrument_locked'] = False
+            note_info['locked_instrument'] = None
+            print(f"Instrument unlocked for note {note_id}")
+            LLAudio.preload_sound_for_looping_note(note_id, note_info['key'])
+    print("All instruments unlocked.")
     # Update the GUI display
     if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
         LLMain.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')

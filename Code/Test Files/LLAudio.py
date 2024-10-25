@@ -74,9 +74,9 @@ def preload_sounds():
     # Preload sounds for looping notes
     for note_id, note_info in LLMain.looping_notes.items():
         key = note_info['key']
-        preload_sound_for_looping_note(note_id, key)
+        preload_sound_for_looping_note(note_id, key, instrument=note_info['created_instrument'])
 
-def preload_sound_for_looping_note(note_id, key):
+def preload_sound_for_looping_note(note_id, key, instrument):
     """Preload sounds for a specific looping note based on its current settings."""
     note_info = LLMain.looping_notes[note_id]
     octave = LLMain.current_octave
@@ -90,10 +90,18 @@ def preload_sound_for_looping_note(note_id, key):
     if note_info.get('key_locked'):
         used_key = note_info['locked_key']
 
+    # Use locked instrument if instrument is locked
+    instrument_folder = LLMain.current_folder
+    if note_info.get('instrument_locked'):
+        instrument_folder = note_info['locked_instrument']
+
+    # Generate the transposed note
     original_note = LLMain.input_to_note[key]
     transposed_note, adjusted_octave = LLHelpers.transpose_note(original_note, used_key, octave)
+    if key == '=':
+        adjusted_octave += 1
     sound_file = f"{transposed_note}{adjusted_octave}.wav"
-    sound_path = os.path.join(LLMain.current_folder, sound_file)
+    sound_path = os.path.join(instrument_folder, sound_file)
 
     # Check if the sound file exists
     if not os.path.exists(sound_path):
@@ -133,6 +141,20 @@ def preload_sound_for_looping_note(note_id, key):
     original_sound = convert_pydub_to_pygame(sound)
     original_sound.set_volume(LLMain.volume)
     note_info['sounds']['original'] = original_sound
+
+def choose_folder(folder_name):
+    """Change the current instrument folder and preload sounds."""
+    if folder_name in LLMain.instrument_folders:
+        LLMain.current_folder = os.path.join(LLMain.base_folder, folder_name)
+        if LLMain.running:
+            preload_sounds()
+            # Reload sounds for looping notes that are not instrument-locked
+            for note_id, note_info in LLMain.looping_notes.items():
+                if not note_info.get('instrument_locked'):
+                    preload_sound_for_looping_note(note_id, note_info['key'], instrument=LLMain.current_folder)
+        print(f"Instrument changed to {folder_name}")
+    else:
+        print(f"Instrument folder {folder_name} not found.")
 
 def adjust_volume(value):
     """Adjust the volume of all sounds."""
@@ -184,6 +206,18 @@ def choose_folder(folder_name):
     LLMain.current_folder = os.path.join(LLMain.base_folder, folder_name)
     if LLMain.running:
         preload_sounds()
+        # Reload sounds for looping notes that are not instrument-locked
+        for note_id, note_info in LLMain.looping_notes.items():
+            if not note_info.get('instrument_locked'):
+                preload_sound_for_looping_note(note_id, note_info['key'])
+    print(f"Instrument changed to {folder_name}")
+
+    # Update the display of looping notes
+    if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
+        try:
+            LLMain.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')
+        except Exception as e:
+            print(f"Error updating advanced menu: {e}")
 
 def start_harp():
     """Initialize and start the harp application."""
