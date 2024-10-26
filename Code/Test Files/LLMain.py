@@ -81,5 +81,11 @@ scheduled_tasks = {}
 # Store active channels for sustain sounds
 active_sustain_channels = {}
 
+# Add this debounce time
+DEBOUNCE_TIME = 0.1  # 100ms
+
+# Track the last key press time
+last_press_time = {}
+
 if __name__ == "__main__":
     LLGui.main_menu()
