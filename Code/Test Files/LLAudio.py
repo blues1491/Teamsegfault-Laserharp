@@ -176,7 +176,7 @@ def change_octave(octave):
         # Reload sounds for looping notes
         for note_id, note_info in LLMain.looping_notes.items():
             if not note_info['octave_locked']:
-                preload_sound_for_looping_note(note_id, note_info['key'])
+                preload_sound_for_looping_note(note_id, note_info['key'], instrument=LLMain.current_folder)
 
     # Update the display of looping notes
     if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
@@ -193,7 +193,7 @@ def change_key(key):
         # Reload sounds for looping notes that are not key locked
         for note_id, note_info in LLMain.looping_notes.items():
             if not note_info.get('key_locked'):
-                preload_sound_for_looping_note(note_id, note_info['key'])
+                preload_sound_for_looping_note(note_id, note_info['key'], instrument=LLMain.current_folder)
     # Update the display of looping notes
     if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
         try:
@@ -209,7 +209,7 @@ def choose_folder(folder_name):
         # Reload sounds for looping notes that are not instrument-locked
         for note_id, note_info in LLMain.looping_notes.items():
             if not note_info.get('instrument_locked'):
-                preload_sound_for_looping_note(note_id, note_info['key'])
+                preload_sound_for_looping_note(note_id, note_info['key'], instrument=LLMain.current_folder)
     print(f"Instrument changed to {folder_name}")
 
     # Update the display of looping notes
