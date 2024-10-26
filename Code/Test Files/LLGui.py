@@ -1,40 +1,45 @@
 # LLGui.py
 
-import tkinter
-from tkinter import ttk
 import os
-
-import pygame
+import tkinter as tk
+from tkinter import ttk
 import LLMain
 import LLAudio
 import LLLooping
-import LLInput
+import LLHelpers
 
 def octave_buttons():
     """Create octave switcher buttons."""
-    tkinter.Label(main_frame, text="Octave Switcher").grid(row=0, column=0, sticky='nsw')
-    octave_buttons_frame = tkinter.Frame(main_frame)
+    tk.Label(main_frame, text="Octave Switcher").grid(row=0, column=0, sticky='nsw')
+    octave_buttons_frame = tk.Frame(main_frame)
     octave_buttons_frame.grid(row=1, column=0, sticky='nsw')
 
     main_frame.grid_rowconfigure(1, weight=10)
     octave_buttons_frame.grid_rowconfigure(0, weight=1)
 
     for i, octave in enumerate(LLMain.octave_range):
-        octave_button = tkinter.Button(octave_buttons_frame, text=f"Octave {octave}", command=lambda o=octave: LLAudio.change_octave(o), width=padding_x, activebackground="blue", activeforeground="white")
+        octave_button = tk.Button(
+            octave_buttons_frame,
+            text=f"Octave {octave}",
+            command=lambda o=octave: LLAudio.change_octave(o),
+            width=20,
+            activebackground="blue",
+            activeforeground="white"
+        )
         octave_button.grid(row=i * 2, column=0, pady=padding_y, sticky='nsw')
         octave_buttons_frame.grid_rowconfigure(i * 2, weight=1)
 
 def volume_slider():
     """Create volume slider."""
-    tkinter.Label(main_frame, text="Volume").grid(row=0, column=1, pady=padding_y)
-    volume_slider = tkinter.Scale(
+    tk.Label(main_frame, text="Volume").grid(row=0, column=1, pady=padding_y)
+    volume_slider = tk.Scale(
         main_frame,
         from_=1,
         to=0,
         orient='vertical',
         command=LLAudio.adjust_volume,
         resolution=.01,
-        width=padding_x*2.5,
+        width=padding_y * 4,
         activebackground="blue",
         showvalue=0,
         repeatdelay=100
@@ -44,21 +49,28 @@ def volume_slider():
 
 def instrument_buttons():
     """Create instrument switcher buttons."""
-    tkinter.Label(main_frame, text="Instrument Switcher").grid(row=0, column=2, sticky='nse')
-    instrument_button_frame = tkinter.Frame(main_frame)
+    tk.Label(main_frame, text="Instrument Switcher").grid(row=0, column=2, sticky='nse')
+    instrument_button_frame = tk.Frame(main_frame)
     instrument_button_frame.grid(row=1, column=2, sticky='nse')
 
     instrument_button_frame.grid_rowconfigure(0, weight=1)
     instrument_button_frame.grid_columnconfigure(0, weight=1)
 
     for i, instrument in enumerate(LLMain.instrument_folders):
-        instrument_button = tkinter.Button(instrument_button_frame, text=f"{instrument}", width=padding_x, command=lambda i=instrument: LLAudio.choose_folder(i), activebackground="blue", activeforeground="white")
+        instrument_button = tk.Button(
+            instrument_button_frame,
+            text=f"{instrument}",
+            width=20,
+            command=lambda i=instrument: LLAudio.choose_folder(i),
+            activebackground="blue",
+            activeforeground="white"
+        )
         instrument_button.grid(row=i, column=0, pady=padding_y, sticky='nse')
         instrument_button_frame.grid_rowconfigure(i, weight=1)
 
 def advanced_menu():
     """Create the advanced options menu."""
-    menu = tkinter.Toplevel(root)
+    menu = tk.Toplevel(root)
     menu.title("Advanced Options")
     menu.attributes('-fullscreen', True)
 
@@ -66,7 +78,7 @@ def advanced_menu():
     LLMain.advanced_menu_window = menu
 
     # Create a frame inside the advanced menu for layout
-    advanced_frame = tkinter.Frame(menu)
+    advanced_frame = tk.Frame(menu)
     advanced_frame.pack(expand=True, fill='both', padx=padding_x, pady=padding_y)
 
     # Divide the advanced frame into columns
@@ -74,66 +86,72 @@ def advanced_menu():
     advanced_frame.grid_columnconfigure(1, weight=1)
 
     # Left side: Key selection and other controls
-    controls_frame = tkinter.Frame(advanced_frame)
-    controls_frame.grid(row=0, column=0, sticky='nsw')
+    controls_frame = tk.Frame(advanced_frame)
+    controls_frame.grid(row=0, column=0, sticky='nsew')
 
-    tkinter.Label(controls_frame, text="Select Key").pack(pady=padding_y)
-    key_dropdown = ttk.Combobox(controls_frame, values=LLMain.keys, state="readonly", width=padding_x, height=12)
+    tk.Label(controls_frame, text="Select Key").pack(pady=padding_y)
+    key_dropdown = ttk.Combobox(controls_frame, values=LLMain.keys, state="readonly")
     key_dropdown.set(LLMain.current_key)
-    key_dropdown.bind("<<ComboboxSelected>>", lambda e: LLAudio.change_key(key_dropdown.get()))
+    key_dropdown.bind(
+        "<<ComboboxSelected>>",
+        lambda e: LLAudio.change_key(key_dropdown.get())
+    )
     key_dropdown.pack(pady=padding_y)
 
     # Sustain option
-    sustain_var = tkinter.BooleanVar(value=LLMain.sustain_option)
+    sustain_var = tk.BooleanVar(value=LLMain.sustain_option)
 
     def update_sustain():
         LLMain.sustain_option = sustain_var.get()
         if LLMain.running:
             LLAudio.preload_sounds()
 
-    sustain_check = tkinter.Checkbutton(controls_frame, text="Sustain", variable=sustain_var, command=update_sustain)
+    sustain_check = tk.Checkbutton(
+        controls_frame,
+        text="Sustain",
+        variable=sustain_var,
+        command=update_sustain
+    )
     sustain_check.pack(pady=padding_y)
 
     # Loop button
     def activate_loop_mode():
         LLMain.loop_mode = True
 
-    loop_button = tkinter.Button(controls_frame, text="Loop Next Note", command=activate_loop_mode, width=padding_x, height=int(padding_y*.3))
+    loop_button = tk.Button(
+        controls_frame,
+        text="Loop Next Note",
+        command=activate_loop_mode
+    )
     loop_button.pack(pady=padding_y)
 
     # Stop All Loops button
-    stop_all_button = tkinter.Button(controls_frame, text="Stop All Loops", command=LLLooping.stop_all_loops, width=padding_x, height=int(padding_y*.3))
+    stop_all_button = tk.Button(
+        controls_frame,
+        text="Stop All Loops",
+        command=LLLooping.stop_all_loops
+    )
     stop_all_button.pack(pady=padding_y)
 
     # Right side: Looping notes display
-    looping_frame = tkinter.Frame(advanced_frame)
-    looping_frame.grid(row=0, column=1, sticky='nse')
+    looping_frame = tk.Frame(advanced_frame)
+    looping_frame.grid(row=0, column=1, sticky='nsew')
 
-    tkinter.Label(looping_frame, text="Looping Notes Slots").pack(pady=padding_y)
+    tk.Label(looping_frame, text="Looping Notes Slots").pack(pady=padding_y)
 
     # Reset the slot frames list
     LLMain.looping_slot_frames = []
 
     for i in range(LLMain.max_loops):
-        slot_frame = tkinter.Frame(looping_frame, relief='sunken', borderwidth=1)
+        slot_frame = tk.Frame(looping_frame, relief='sunken', borderwidth=1)
         slot_frame.pack(fill='x', pady=padding_y/4)
 
-        slot_label = tkinter.Label(slot_frame, text=f"Slot {i+1}: Available", height=int(padding_y*.12))
+        slot_label = tk.Label(slot_frame, text=f"Slot {i+1}: Available")
         slot_label.pack(side='left', padx=padding_x/2)
 
         # Instrument lock checkbox
-        instrument_lock_var = tkinter.BooleanVar()
-        instrument_lock_check = tkinter.Checkbutton(
-            slot_frame,
-            text="Instrument Lock",
-            variable=instrument_lock_var,
-            command=lambda idx=i: LLLooping.toggle_instrument_lock(idx)
-        )
-        instrument_lock_check.pack(side='right', padx=padding_x/2)
-
-        # Instrument lock checkbox
-        instrument_lock_var = tkinter.BooleanVar()
-        instrument_lock_check = tkinter.Checkbutton(
+        instrument_lock_var = tk.BooleanVar()
+        instrument_lock_check = tk.Checkbutton(
             slot_frame,
             text="Instrument Lock",
             variable=instrument_lock_var,
@@ -142,17 +160,31 @@ def advanced_menu():
         instrument_lock_check.pack(side='right', padx=padding_x/2)
 
         # Key lock checkbox
-        key_lock_var = tkinter.BooleanVar()
-        key_lock_check = tkinter.Checkbutton(slot_frame, text="Key Lock", variable=key_lock_var, command=lambda idx=i: LLLooping.toggle_key_lock(idx))
+        key_lock_var = tk.BooleanVar()
+        key_lock_check = tk.Checkbutton(
+            slot_frame,
+            text="Key Lock",
+            variable=key_lock_var,
+            command=lambda idx=i: LLLooping.toggle_key_lock(idx)
+        )
         key_lock_check.pack(side='right', padx=padding_x/2)
 
         # Octave lock checkbox
-        octave_lock_var = tkinter.BooleanVar()
-        octave_lock_check = tkinter.Checkbutton(slot_frame, text="Octave Lock", variable=octave_lock_var, command=lambda idx=i: LLLooping.toggle_octave_lock(idx))
+        octave_lock_var = tk.BooleanVar()
+        octave_lock_check = tk.Checkbutton(
+            slot_frame,
+            text="Octave Lock",
+            variable=octave_lock_var,
+            command=lambda idx=i: LLLooping.toggle_octave_lock(idx)
+        )
         octave_lock_check.pack(side='right', padx=padding_x/2)
 
         # Stop Loop Button
-        stop_loop_button = tkinter.Button(slot_frame, text="Stop", command=lambda idx=i: LLLooping.stop_loop_by_slot(idx), width=int(padding_x*.25), height=int(padding_y*.1))
+        stop_loop_button = tk.Button(
+            slot_frame,
+            text="Stop",
+            command=lambda idx=i: LLLooping.stop_loop_by_slot(idx)
+        )
         stop_loop_button.pack(side='right', padx=padding_x/2)
 
         # Store frame, label, and variables
@@ -165,17 +197,17 @@ def advanced_menu():
         })
 
     # Add Lock All and Unlock All buttons for instruments
-    instrument_lock_buttons_frame = tkinter.Frame(looping_frame)
+    instrument_lock_buttons_frame = tk.Frame(looping_frame)
     instrument_lock_buttons_frame.pack(pady=padding_y)
 
-    lock_all_instruments_button = tkinter.Button(
+    lock_all_instruments_button = tk.Button(
         instrument_lock_buttons_frame,
         text="Lock All Instruments",
         command=LLLooping.lock_all_instruments
     )
     lock_all_instruments_button.pack(side='left', padx=padding_x/2)
 
-    unlock_all_instruments_button = tkinter.Button(
+    unlock_all_instruments_button = tk.Button(
         instrument_lock_buttons_frame,
         text="Unlock All Instruments",
         command=LLLooping.unlock_all_instruments
@@ -184,23 +216,39 @@ def advanced_menu():
 
 
     # Add Lock All and Unlock All buttons for octaves
-    octave_lock_buttons_frame = tkinter.Frame(looping_frame)
+    octave_lock_buttons_frame = tk.Frame(looping_frame)
     octave_lock_buttons_frame.pack(pady=padding_y)
 
-    lock_all_octaves_button = tkinter.Button(octave_lock_buttons_frame, text="Lock All Octaves", command=LLLooping.lock_all_octaves, width=padding_x, height=int(padding_y*.17))
+    lock_all_octaves_button = tk.Button(
+        octave_lock_buttons_frame,
+        text="Lock All Octaves",
+        command=LLLooping.lock_all_octaves
+    )
     lock_all_octaves_button.pack(side='left', padx=padding_x/2)
 
-    unlock_all_octaves_button = tkinter.Button(octave_lock_buttons_frame, text="Unlock All Octaves", command=LLLooping.unlock_all_octaves, width=padding_x, height=int(padding_y*.17))
+    unlock_all_octaves_button = tk.Button(
+        octave_lock_buttons_frame,
+        text="Unlock All Octaves",
+        command=LLLooping.unlock_all_octaves
+    )
     unlock_all_octaves_button.pack(side='right', padx=padding_x/2)
 
     # Add Lock All and Unlock All buttons for keys
-    key_lock_buttons_frame = tkinter.Frame(looping_frame)
+    key_lock_buttons_frame = tk.Frame(looping_frame)
     key_lock_buttons_frame.pack(pady=padding_y)
 
-    lock_all_keys_button = tkinter.Button(key_lock_buttons_frame, text="Lock All Keys", command=LLLooping.lock_all_keys, width=padding_x, height=int(padding_y*.17))
+    lock_all_keys_button = tk.Button(
+        key_lock_buttons_frame,
+        text="Lock All Keys",
+        command=LLLooping.lock_all_keys
+    )
     lock_all_keys_button.pack(side='left', padx=padding_x/2)
 
-    unlock_all_keys_button = tkinter.Button(key_lock_buttons_frame, text="Unlock All Keys", command=LLLooping.unlock_all_keys, width=padding_x, height=int(padding_y*.17))
+    unlock_all_keys_button = tk.Button(
+        key_lock_buttons_frame,
+        text="Unlock All Keys",
+        command=LLLooping.unlock_all_keys
+    )
     unlock_all_keys_button.pack(side='right', padx=padding_x/2)
 
     # Bind a custom event to update the display
@@ -209,14 +257,19 @@ def advanced_menu():
     # Call update_looping_notes_display to initialize the display
     update_looping_notes_display()
 
-    button_frame = tkinter.Frame(menu)
-    button_frame.pack(side=tkinter.BOTTOM, pady=padding_y)
+    button_frame = tk.Frame(menu)
+    button_frame.pack(side=tk.BOTTOM, pady=padding_y)
 
-    tkinter.Button(button_frame, text="Exit", command=menu.destroy, width=padding_x, height=int(padding_y*.2)).pack(side=tkinter.RIGHT, padx=padding_x)
+    tk.Button(
+        button_frame,
+        text="Exit",
+        command=menu.destroy,
+        width=20
+    ).pack(side=tk.RIGHT, padx=padding_x)
 
     if LLMain.running:
-        menu.bind("<KeyPress>", LLInput.key_press)
-        menu.bind("<KeyRelease>", LLInput.key_release)
+        menu.bind("<KeyPress>", LLLooping.key_press)
+        menu.bind("<KeyRelease>", LLLooping.key_release)
 
     # Handle the advanced menu closing
     def on_advanced_menu_close():
@@ -257,7 +310,7 @@ def update_looping_notes_display(event=None):
             used_instrument = note_info['locked_instrument'] if note_info['instrument_locked'] else LLMain.current_folder
             instrument_name = os.path.basename(used_instrument)
             # Transpose the note based on the used key
-            transposed_note, adjusted_octave = LLAudio.transpose_note(original_note, used_key, octave)
+            transposed_note, adjusted_octave = LLHelpers.transpose_note(original_note, used_key, octave)
             display_note_id = f"{transposed_note}{adjusted_octave}"
             # Check if sustain mode is on for this looping note
             sustain_status = "Sustain" if note_info['sustain_option'] else "Normal"
@@ -279,26 +332,14 @@ def update_looping_notes_display(event=None):
 
 def start_harp():
     """Start the harp application."""
-    LLMain.running = True
-    LLAudio.preload_sounds()
+    LLAudio.start_harp()
     start_button.config(text="Stop", command=stop_harp)
-    root.bind("<KeyPress>", LLInput.key_press)
-    root.bind("<KeyRelease>", LLInput.key_release)
+    root.bind("<KeyPress>", LLLooping.key_press)
+    root.bind("<KeyRelease>", LLLooping.key_release)
 
 def stop_harp():
     """Stop the harp application."""
-    LLMain.running = False
-    pygame.mixer.stop()
-    
-    # Stop all looping notes and cancel scheduled tasks
-    for note_id in list(LLMain.looping_notes.keys()):
-        LLLooping.stop_looping_note(note_id)
-        
-    # Cancel any scheduled sustain plays
-    for key in list(LLMain.scheduled_tasks.keys()):
-        LLMain.root.after_cancel(LLMain.scheduled_tasks[key])
-        
-    LLMain.scheduled_tasks.clear()
+    LLAudio.stop_harp()
     start_button.config(text="Start", command=start_harp)
     root.unbind("<KeyPress>")
     root.unbind("<KeyRelease>")
@@ -307,7 +348,7 @@ def main_menu():
     """Set up the main GUI layout."""
     global start_button
     global root
-    root = tkinter.tkinter()
+    root = tk.Tk()
     LLMain.root = root
     root.title("Laser Harp Main Menu")
     root.attributes('-fullscreen', True)
@@ -322,7 +363,7 @@ def main_menu():
     padding_y = int(screen_height * 0.02)
 
     global main_frame
-    main_frame = tkinter.Frame(root)
+    main_frame = tk.Frame(root)
     main_frame.pack(expand=True, fill='both', padx=padding_x, pady=padding_y)
 
     main_frame.grid_columnconfigure(0, weight=1)
@@ -333,14 +374,24 @@ def main_menu():
     volume_slider()
     instrument_buttons()
 
-    button_frame = tkinter.Frame(root)
-    button_frame.pack(side=tkinter.BOTTOM, pady=padding_y)
+    button_frame = tk.Frame(root)
+    button_frame.pack(side=tk.BOTTOM, pady=padding_y)
 
-    start_button = tkinter.Button(button_frame, text="Start", command=start_harp, width=padding_x, height=int(padding_y*.2))
-    start_button.pack(side=tkinter.LEFT, padx=padding_x)
+    start_button = tk.Button(button_frame, text="Start", command=start_harp, width=20)
+    start_button.pack(side=tk.LEFT, padx=padding_x)
 
-    tkinter.Button(button_frame, text="Advanced Options", command=advanced_menu, width=padding_x, height=int(padding_y*.2)).pack(side=tkinter.RIGHT, padx=padding_x)
+    tk.Button(
+        button_frame,
+        text="Advanced Options",
+        command=advanced_menu,
+        width=20
+    ).pack(side=tk.RIGHT, padx=padding_x)
 
-    tkinter.Button(button_frame, text="Exit", command=root.quit, width=padding_x, height=int(padding_y*.2)).pack(side=tkinter.RIGHT, padx=padding_x)
+    tk.Button(
+        button_frame,
+        text="Exit",
+        command=root.quit,
+        width=20
+    ).pack(side=tk.RIGHT, padx=padding_x)
 
     root.mainloop()
