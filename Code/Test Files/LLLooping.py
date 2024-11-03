@@ -27,6 +27,7 @@ def key_press(event):
             handle_loop_mode(unique_note_id, key)
         else:
             handle_normal_key_press(unique_note_id, key, octave)
+
 def handle_shift(direction, current_time):
     """Handle octave changes with shift keys."""
     if direction == 'left':
@@ -112,7 +113,6 @@ def key_release(event):
                 # Schedule to stop the sustain sound after sustain_interval
                 task_id = LLMain.root.after(LLMain.sustain_interval, lambda: stop_sustain_sound(key))
                 LLMain.scheduled_tasks[key] = task_id
-
 
 def schedule_sustain_play(key):
     """Schedule the sustain sound to play with overlaps."""
@@ -202,7 +202,6 @@ def start_looping_note(note_id, key):
     if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
         LLMain.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')
 
-
 def schedule_normal_loop_play(key, note_id):
     """Schedule the next playback of the original sound for normal looping."""
     if note_id in LLMain.looping_notes:
@@ -261,7 +260,6 @@ def note_matches_current_settings(note_info, key, octave, instrument, sustain_op
 
     return (key == expected_key and octave == expected_octave and 
             instrument == expected_instrument and sustain_option == expected_sustain_option)
-
 
 def stop_looping_note(note_id):
     """Stop looping a note and free its slot."""
@@ -336,7 +334,7 @@ def toggle_octave_lock(slot_index):
             note_info['locked_octave'] = LLMain.current_octave
             print(f"Octave locked for note {note_id} at octave {note_info['locked_octave']}")
             # Reload sound with the locked octave
-            LLAudio.preload_sound_for_looping_note(note_id, note_info['key'])
+            LLAudio.preload_sound_for_looping_note(note_id, note_info['key'], note_info['locked_instrument'] if note_info['instrument_locked'] else LLMain.current_folder)
         else:
             print(f"Octave unlocked for note {note_id}")
             # Reload sound with the current global octave
@@ -383,7 +381,7 @@ def toggle_key_lock(slot_index):
             note_info['locked_key'] = None
             print(f"Key unlocked for note {note_id}")
         # Reload sound with the locked or current key
-        LLAudio.preload_sound_for_looping_note(note_id, note_info['key'])
+        LLAudio.preload_sound_for_looping_note(note_id, note_info['key'], note_info['locked_instrument'] if note_info['instrument_locked'] else LLMain.current_folder)
         # Update the GUI display
         if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
             LLMain.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')
@@ -426,7 +424,7 @@ def toggle_instrument_lock(slot_index):
             note_info['locked_instrument'] = None
             print(f"Instrument unlocked for note {note_id}")
         # Reload sound with the locked or current instrument
-        LLAudio.preload_sound_for_looping_note(note_id, note_info['key'])
+        LLAudio.preload_sound_for_looping_note(note_id, note_info['key'], note_info['locked_instrument'] if note_info['instrument_locked'] else LLMain.current_folder)
         # Update the GUI display
         if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
             LLMain.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')
@@ -443,7 +441,6 @@ def lock_all_instruments():
     if LLMain.advanced_menu_window and LLMain.advanced_menu_window.winfo_exists():
         LLMain.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')
     print("All instruments locked.")
-
 
 def unlock_all_instruments():
     """Unlock the instrument for all looping notes and update GUI checkboxes."""
