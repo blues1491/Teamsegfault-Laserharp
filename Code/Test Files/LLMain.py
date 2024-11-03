@@ -53,7 +53,7 @@ fade_out_duration = 500   # milliseconds
 attack_duration = 100     # milliseconds
 sustain_interval = 1000   # milliseconds
 sustain_option = False
-max_overlaps = 8
+max_overlaps = 10
 
 # Looping Notes Settings
 loop_mode = False         # Indicates if loop mode is active
@@ -68,6 +68,24 @@ advanced_menu_window = None  # Reference to the advanced menu window
 # Key Status and Scheduling
 key_status = {}
 scheduled_tasks = {}
+
+# Shift Key Timing for Octave Changes
+last_shift_l_time = 0
+last_shift_r_time = 0
+shift_cooldown = 0.2  # 200 milliseconds
+
+# Key Status and Scheduling
+key_status = {}
+scheduled_tasks = {}
+
+# Store active channels for sustain sounds
+active_sustain_channels = {}
+
+# Add this debounce time
+DEBOUNCE_TIME = 0.1  # 100ms
+
+# Track the last key press time
+last_press_time = {}
 
 if __name__ == "__main__":
     LLGui.main_menu()

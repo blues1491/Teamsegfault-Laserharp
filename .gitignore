@@ -22,5 +22,17 @@ local.properties
 Laser Harp Top and Sides.gcode
 Bottom Rail Laser Harp.gcode
 .pyc
+__pycache__
 Code/Test Files/__pycache__
+Code/Test Files/__pycache__/LLAudio.cpython-312.pyc
+Code/Test Files/__pycache__/LLGui.cpython-312.pyc
+Code/Test Files/__pycache__/LLMain.cpython-312.pyc
+Code/Test Files/__pycache__/LLAudio.cpython-311.pyc
+Code/Test Files/__pycache__/LLGui.cpython-311.pyc
+Code/Test Files/__pycache__/LLMain.cpython-311.pyc
+Code/Test Files/__pycache__/LLHelpers.cpython-311.pyc
+Code/Test Files/__pycache__/LLLooping.cpython-311.pyc
+temp.py
+Code/Test Files/__pycache__/LLHelpers.cpython-311.pyc
+Code/Test Files/__pycache__/LLLooping.cpython-311.pyc
 Code/Test Files/temp.py
