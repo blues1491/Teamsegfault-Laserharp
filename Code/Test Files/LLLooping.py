@@ -240,16 +240,14 @@ def play_sustain_sound_loop(note_info):
         # Store the channel
         note_info['active_channels'].append(channel)
 
-def stop_looping_note_by_key(note_id, key, octave):
-    """Stop looping a note when the user plays the note again with matching settings."""
+def stop_looping_note_by_key(note_id, key, octave, instrument, sustain_option):
     note_info = LLMain.looping_notes[note_id]
-
-    # Check if the key, octave, and instrument match
-    if note_matches_current_settings(note_info, key, octave):
+    if note_matches_current_settings(note_info, key, octave, instrument, sustain_option):
         stop_looping_note(note_id)
         print(f"Stopped looping note by key press: {note_id}")
     else:
         print(f"Pressed key does not match looping note settings; note continues.")
+
 
 def note_matches_current_settings(note_info, key, octave, instrument, sustain_option):
     """Check if the pressed key, octave, instrument, and mode match the looping note's settings."""
