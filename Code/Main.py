@@ -6,6 +6,7 @@ import os
 import pygame
 import Gui
 import Audio
+import Helpers
 import Looping
 
 # Initialize Pygame mixer
@@ -28,19 +29,19 @@ sustain_lengths = {}
 
 # Key Mappings and Notes
 KEY_PINS = {
-    17: "C",    # GPIO pin 17 -> "C"
-    18: "C#",   # GPIO pin 18 -> "C#"
-    27: "D",    # GPIO pin 27 -> "D"
-    22: "D#",   # GPIO pin 22 -> "D#"
-    23: "E",    # GPIO pin 23 -> "E"
+    21: "C",    # GPIO pin 17 -> "C"
+    20: "C#",   # GPIO pin 18 -> "C#"
+    16: "D",    # GPIO pin 27 -> "d"
+    12: "D#",   # GPIO pin 22 -> "D#"
+    25: "E",    # GPIO pin 23 -> "E"
     24: "F",    # GPIO pin 24 -> "F"
-    25: "F#",   # GPIO pin 25 -> "F#"
-    5: "G",     # GPIO pin 5 -> "G"
-    6: "G#",    # GPIO pin 6 -> "G#"
-    12: "A",    # GPIO pin 12 -> "A"
+    23: "F#",   # GPIO pin 25 -> "F#"
+    18: "G",     # GPIO pin 5 -> "G"
+    26: "G#",    # GPIO pin 6 -> "G#"
+    19: "A",    # GPIO pin 12 -> "A"
     13: "A#",   # GPIO pin 13 -> "A#"
-    19: "B",    # GPIO pin 19 -> "B"
-    26: "C"    # GPIO pin 26 -> "C2"
+    6: "B",    # GPIO pin 19 -> "B"
+    5: "C"    # GPIO pin 26 -> "C2"
 }
 keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 current_key = "C"
@@ -55,7 +56,7 @@ fade_out_duration = 500   # milliseconds
 attack_duration = 100     # milliseconds
 sustain_interval = 1000   # milliseconds
 sustain_option = False
-max_overlaps = 8
+max_overlaps = 10
 
 # Looping Notes Settings
 loop_mode = False         # Indicates if loop mode is active
@@ -77,24 +78,38 @@ last_shift_l_time = 0
 last_shift_r_time = 0
 shift_cooldown = 0.2  # 200 milliseconds
 
-# Store active channels for sustain sounds
-active_sustain_channels = {}
+# Initialize sustain channel tracking
+active_sustain_channels = {pin: [] for pin in KEY_PINS}
 
 # Add debounce time
 DEBOUNCE_TIME = 0.1  # 100ms
 
 # Initialize GPIO chip
+# Initialize GPIO chip
 chip = lgpio.gpiochip_open(0)
+
+# Ensure pins are claimed only once
+claimed_pins = set()
+
 for pin in KEY_PINS:
-    lgpio.gpio_claim_input(chip, pin)
+    if pin not in claimed_pins:
+        try:
+            lgpio.gpio_claim_input(chip, pin)
+            claimed_pins.add(pin)
+            print(f"Claimed GPIO pin: {pin}")
+        except lgpio.error as e:
+            if "GPIO busy" in str(e):
+                print(f"GPIO pin {pin} is already in use. Skipping...")
+            else:
+                raise
 
 def handle_key_press(note):
     """Handle key press logic."""
-    print(f"Key pressed: {note}")
+    #print(f"Key pressed: {note}")
     octave = current_octave
-    if note == "C2":  # Example for octave change
+    if KEY_PINS[note] == 5:  # Example for octave change
         octave += 1
-    note_id = Audio.get_note_identifier(note, octave)
+    note_id = Helpers.get_note_identifier(note, octave)
 
     if loop_mode:
         Looping.handle_loop_mode(note_id, note)  # Activate looping logic
@@ -103,46 +118,32 @@ def handle_key_press(note):
 
 def handle_key_release(note):
     """Handle key release logic."""
-    print(f"Key released: {note}")
+    key_status[note] = False  # Mark key as released
     if sustain_option:
-        Audio.stop_sustain(note)  # Stop sustain if active
+        Audio.stop_sustain_sound(note)  # Stop sustain if active
     else:
         Audio.stop_note_immediately(note)  # Stop normal playback
 
 def poll_keys():
-    """Poll GPIO pins to detect keypresses and handle logic."""
-    current_time = time.time()
-    for pin, note in KEY_PINS.items():
-        pin_state = lgpio.gpio_read(chip, pin)
-        if pin_state == 1:  # Button pressed (GPIO HIGH)
-            if not key_status[pin] and (current_time - last_press_time[pin] > DEBOUNCE_TIME):
-                key_status[pin] = True
-                last_press_time[pin] = current_time
-                handle_key_press(note)  # Process key press
-        else:  # Button released (GPIO LOW)
-            if key_status[pin]:
-                key_status[pin] = False
-                handle_key_release(note)  # Process key release
+    """Poll GPIO pins for state changes."""
+    for pin in claimed_pins:  # Use only successfully claimed pins
+        try:
+            pin_state = lgpio.gpio_read(chip, pin)
+            if pin_state == 1:  # Detect key press
+                handle_key_press(pin)
+            elif pin_state == 0:  # Detect key release
+                handle_key_release(pin)
+        except lgpio.error as e:
+            print(f"Error reading GPIO pin {pin}: {e}")
 
-def main():
-    """Main loop for polling GPIO and running the GUI."""
-    global running
-    running = True
-
-    # Preload audio and start GUI
-    Audio.preload_sounds()
-
-    try:
-        while True:
-            poll_keys()  # Check GPIO inputs
-            time.sleep(0.01)  # Small delay for CPU relief
-    except KeyboardInterrupt:
-        print("Exiting program...")
-    finally:
-        running = False
-        lgpio.gpiochip_close(chip)  # Cleanup GPIO
-        pygame.mixer.quit()
+def cleanup_gpio():
+    """Release GPIO pins on exit."""
+    for pin in claimed_pins:
+        try:
+            lgpio.gpio_free(chip, pin)
+        except lgpio.error as e:
+            print(f"Error releasing GPIO pin {pin}: {e}")
+    lgpio.gpiochip_close(chip)
 
 if __name__ == "__main__":
     Gui.main_menu()  # Launch the GUI
-    main()

@@ -57,19 +57,23 @@ def preload_sounds():
     if Main.advanced_menu_window and Main.advanced_menu_window.winfo_exists():
         Main.advanced_menu_window.event_generate('<<UpdateLoopingNotesDisplay>>', when='tail')
 
-def preload_sound_for_looping_note(note_id, key, instrument):
+def preload_sound_for_looping_note(note_id, key, instrument=None):
     """Preload sounds for a specific looping note."""
     note_info = Main.looping_notes[note_id]
+
+    # Use locked instrument if applicable
+    instrument_to_use = instrument or (note_info['locked_instrument'] if note_info['instrument_locked'] else Main.current_folder)
     octave = note_info['locked_octave'] if note_info['octave_locked'] else Main.current_octave
     used_key = note_info['locked_key'] if note_info['key_locked'] else Main.current_key
-    instrument_folder = note_info['locked_instrument'] if note_info['instrument_locked'] else Main.current_folder
 
-    transposed_note, adjusted_octave = Helpers.transpose_note(Main.input_to_note[key], used_key, octave)
+    print(f"Preloading sound for note {note_id}: key={used_key}, octave={octave}, instrument={instrument_to_use}")
+
+    transposed_note, adjusted_octave = Helpers.transpose_note(Main.KEY_PINS[key], used_key, octave)
     sound_file = f"{transposed_note}{adjusted_octave}.wav"
-    sound_path = os.path.join(instrument_folder, sound_file)
+    sound_path = os.path.join(instrument_to_use, sound_file)
 
     if not os.path.exists(sound_path):
-        print(f"Sound file not found for looping note: {sound_path}")
+        print(f"Sound file not found: {sound_path}")
         return
 
     sound = AudioSegment.from_wav(sound_path)
@@ -91,15 +95,20 @@ def preload_sound_for_looping_note(note_id, key, instrument):
     note_info['sustain_length'] = sustain_sound.get_length() * 1000
 
 def choose_folder(folder_name):
-    """Change the instrument folder and reload sounds."""
+    """Change the global instrument folder."""
     if folder_name in Main.instrument_folders:
         Main.current_folder = os.path.join(Main.base_folder, folder_name)
+        print(f"Instrument changed to {folder_name}")
+
         if Main.running:
             preload_sounds()
             for note_id, note_info in Main.looping_notes.items():
-                if not note_info.get('instrument_locked'):
+                # Reload sounds only for unlocked notes
+                if not note_info['instrument_locked']:
+                    print(f"Reloading sound for unlocked note {note_id}")
                     preload_sound_for_looping_note(note_id, note_info['key'], Main.current_folder)
-        print(f"Instrument changed to {folder_name}")
+                else:
+                    print(f"Instrument for note {note_id} remains locked to {note_info['locked_instrument']}")
     else:
         print(f"Instrument folder {folder_name} not found.")
 
@@ -134,6 +143,14 @@ def start_harp():
     Main.running = True
     preload_sounds()
 
+    # Schedule GPIO polling
+    def poll_wrapper():
+        if Main.running:
+            Main.poll_keys()
+            Main.root.after(10, poll_wrapper)  # Poll every 10ms
+
+    Main.root.after(10, poll_wrapper)  # Start polling
+
 def stop_harp():
     """Stop the harp application."""
     Main.running = False
@@ -144,3 +161,107 @@ def stop_harp():
     for key in list(Main.scheduled_tasks.keys()):
         Main.root.after_cancel(Main.scheduled_tasks[key])
     Main.scheduled_tasks.clear()
+
+    # Clear sustain channels
+    for channels in Main.active_sustain_channels.values():
+        for channel in channels:
+            channel.stop()
+    Main.active_sustain_channels.clear()
+
+def play_note(note_id, key, sustain_option=False):
+    """Play a note with optional sustain."""
+    if Main.key_status.get(key, False):  # Key already pressed
+        return
+
+    Main.key_status[key] = True  # Mark the key as pressed
+
+    sounds = Main.sound_objects.get(key)
+    if not sounds:
+        print(f"No sounds loaded for key: {key}")
+        return
+
+    if sustain_option or Main.sustain_option:
+        # Play attack sound and trigger sustain
+        sounds['attack'].play()
+        attack_length = int(sounds['attack'].get_length() * 1000)
+
+        def sustain_play_loop():
+            if Main.key_status.get(key, False):  # Ensure key is still pressed
+                channel = pygame.mixer.find_channel()
+                if channel:
+                    channel.play(sounds['sustain'], loops=-1)  # Loop sustain
+                    if key not in Main.active_sustain_channels:
+                        Main.active_sustain_channels[key] = []
+                    Main.active_sustain_channels[key].append(channel)
+
+        # Schedule sustain playback
+        Main.scheduled_tasks[key] = Main.root.after(attack_length, sustain_play_loop)
+    else:
+        # Play the original sound once
+        sounds['original'].play()
+
+def stop_sustain_sound(key):
+    """Stop all channels playing the sustain sound for this key."""
+    if key in Main.active_sustain_channels:
+        for channel in Main.active_sustain_channels[key]:
+            if Main.fade_out_duration > 0:
+                channel.fadeout(Main.fade_out_duration)
+            else:
+                channel.stop()
+        Main.active_sustain_channels[key] = []
+        #print(f"Sustain sound stopped for key: {key}")
+
+def stop_note_immediately(key):
+    """Stop playback of a note immediately."""
+    sounds = Main.sound_objects.get(key)
+    if not sounds:
+        print(f"No sounds loaded for key: {key}")
+        return
+
+    # Stop playback on all channels playing this key's sounds
+    for sound_type in sounds.values():
+        try:
+            sound_type.stop()
+        except Exception as e:
+            print(f"Error stopping sound for key {key}: {e}")
+
+    # Cancel any scheduled sustain tasks
+    if key in Main.scheduled_tasks:
+        Main.root.after_cancel(Main.scheduled_tasks[key])
+        del Main.scheduled_tasks[key]
+
+    # Mark the key as released
+    Main.key_status[key] = False
+    stop_sustain_sound(key)
+
+def play_sustain_sound_loop(note_info):
+    """Play sustain sound in a loop for a given note."""
+    key = note_info['key']
+    sounds = Main.sound_objects.get(key)
+    if not sounds:
+        print(f"No sounds loaded for key: {key}")
+        return
+
+    sustain_sound = sounds['sustain']
+    channel = pygame.mixer.find_channel()
+    if channel:
+        channel.play(sustain_sound, loops=-1)
+        note_info['active_channels'].append(channel)
+
+
+def play_sustain_sound(key):
+    """Play sustain sound in a loop for the given key."""
+    sounds = Main.sound_objects.get(key)
+    if not sounds:
+        print(f"No sounds loaded for key: {key}")
+        return
+
+    sustain_sound = sounds['sustain']
+    channel = pygame.mixer.find_channel()
+    if channel:
+        channel.play(sustain_sound, loops=-1)  # Loop the sustain sound
+        if key not in Main.active_sustain_channels:
+            Main.active_sustain_channels[key] = []
+        Main.active_sustain_channels[key].append(channel)
+        print(f"Sustain sound started for key: {key}")
+

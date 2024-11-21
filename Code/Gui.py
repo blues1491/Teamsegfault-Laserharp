@@ -1,19 +1,24 @@
 import os
+import sys
 import tkinter as tk
 from tkinter import ttk
 import Audio
+import Helpers
 import Main
 import Looping
 
 # Constants for UI layout
-padding_x = 20
-padding_y = 10
+padding_x = 0
+padding_y = 0
 
 def octave_buttons():
     """Create octave switcher buttons."""
     tk.Label(main_frame, text="Octave Switcher").grid(row=0, column=0, sticky='nsw')
     octave_buttons_frame = tk.Frame(main_frame)
     octave_buttons_frame.grid(row=1, column=0, sticky='nsw')
+
+    main_frame.grid_rowconfigure(1, weight=10)
+    octave_buttons_frame.grid_rowconfigure(0, weight=1)
 
     for i, octave in enumerate(Main.octave_range):
         octave_button = tk.Button(
@@ -24,7 +29,8 @@ def octave_buttons():
             activebackground="blue",
             activeforeground="white"
         )
-        octave_button.grid(row=i, column=0, pady=padding_y, sticky='nsw')
+        octave_button.grid(row=i * 2, column=0, pady=padding_y, sticky='nsw')
+        octave_buttons_frame.grid_rowconfigure(i * 2, weight=1)
 
 def volume_slider():
     """Create volume slider."""
@@ -36,7 +42,7 @@ def volume_slider():
         orient='vertical',
         command=Audio.adjust_volume,
         resolution=.01,
-        width=20,
+        width=padding_y * 4,
         activebackground="blue",
         showvalue=0,
         repeatdelay=100
@@ -50,6 +56,9 @@ def instrument_buttons():
     instrument_button_frame = tk.Frame(main_frame)
     instrument_button_frame.grid(row=1, column=2, sticky='nse')
 
+    instrument_button_frame.grid_rowconfigure(0, weight=1)
+    instrument_button_frame.grid_columnconfigure(0, weight=1)
+
     for i, instrument in enumerate(Main.instrument_folders):
         instrument_button = tk.Button(
             instrument_button_frame,
@@ -60,17 +69,18 @@ def instrument_buttons():
             activeforeground="white"
         )
         instrument_button.grid(row=i, column=0, pady=padding_y, sticky='nse')
+        instrument_button_frame.grid_rowconfigure(i, weight=1)
 
 def advanced_menu():
     """Create the advanced options menu."""
-    menu = tk.Toplevel(root)
+    menu = tk.Toplevel(Main.root)
     menu.title("Advanced Options")
     menu.attributes('-fullscreen', True)
 
     Main.advanced_menu_window = menu  # Reference for updates
 
     advanced_frame = tk.Frame(menu)
-    advanced_frame.pack(expand=True, fill='both', padx=padding_x, pady=padding_y)
+    advanced_frame.grid(row=0, column=0, sticky='nsew')
 
     advanced_frame.grid_columnconfigure(0, weight=1)
     advanced_frame.grid_columnconfigure(1, weight=1)
@@ -89,8 +99,6 @@ def advanced_menu():
 
     def update_sustain():
         Main.sustain_option = sustain_var.get()
-        if Main.running:
-            Audio.preload_sounds()
 
     sustain_check = tk.Checkbutton(
         controls_frame,
@@ -114,16 +122,20 @@ def advanced_menu():
     )
     stop_all_button.pack(pady=padding_y)
 
-    # Looping Notes Slots
-    looping_frame = tk.Frame(advanced_frame)
-    looping_frame.grid(row=0, column=1, sticky='nsew')
+    # Unlock All Buttons
+    unlock_all_frame = tk.Frame(advanced_frame)
+    unlock_all_frame.grid(row=1, column=0, columnspan=2, pady=padding_y)
 
-    tk.Label(looping_frame, text="Looping Notes Slots").pack(pady=padding_y)
+    # Looping Notes Slots
+    Main.looping_notes_frame = tk.Frame(advanced_frame)
+    Main.looping_notes_frame.grid(row=2, column=0, columnspan=2, sticky='nsew')
+
+    tk.Label(Main.looping_notes_frame, text="Looping Notes Slots").pack(pady=padding_y)
 
     Main.looping_slot_frames = []  # Reset slot frames list
 
     for i in range(Main.max_loops):
-        slot_frame = tk.Frame(looping_frame, relief='sunken', borderwidth=1)
+        slot_frame = tk.Frame(Main.looping_notes_frame, relief='sunken', borderwidth=1)
         slot_frame.pack(fill='x', pady=padding_y / 4)
 
         slot_label = tk.Label(slot_frame, text=f"Slot {i + 1}: Available")
@@ -131,38 +143,12 @@ def advanced_menu():
 
         Main.looping_slot_frames.append({'frame': slot_frame, 'label': slot_label})
 
-    # Add Lock/Unlock All Buttons
-    lock_unlock_frame = tk.Frame(looping_frame)
-    lock_unlock_frame.pack(pady=padding_y)
-
-    tk.Button(
-        lock_unlock_frame,
-        text="Lock All Instruments",
-        command=Looping.lock_all_instruments
-    ).pack(side='left', padx=padding_x / 2)
-
-    tk.Button(
-        lock_unlock_frame,
-        text="Unlock All Instruments",
-        command=Looping.unlock_all_instruments
-    ).pack(side='right', padx=padding_x / 2)
-
-    tk.Button(
-        lock_unlock_frame,
-        text="Lock All Keys",
-        command=Looping.lock_all_keys
-    ).pack(side='left', padx=padding_x / 2)
-
-    tk.Button(
-        lock_unlock_frame,
-        text="Unlock All Keys",
-        command=Looping.unlock_all_keys
-    ).pack(side='right', padx=padding_x / 2)
-
     menu.bind('<<UpdateLoopingNotesDisplay>>', update_looping_notes_display)
 
+    update_looping_notes_display()
+
     button_frame = tk.Frame(menu)
-    button_frame.pack(side=tk.BOTTOM, pady=padding_y)
+    button_frame.grid(row=3, column=0, columnspan=2, pady=padding_y)
 
     tk.Button(
         button_frame,
@@ -172,22 +158,42 @@ def advanced_menu():
     ).pack(side=tk.RIGHT, padx=padding_x)
 
     menu.grab_set()
-    root.wait_window(menu)
+    Main.root.wait_window(menu)
 
 def update_looping_notes_display(event=None):
-    """Update the display of looping note slots."""
-    if not hasattr(Main, 'looping_slot_frames'):
-        return
+    """Update the display of looping notes in the advanced menu."""
+    if Main.advanced_menu_window and Main.advanced_menu_window.winfo_exists():
+        # Clear existing widgets in the looping notes frame
+        for widget in Main.looping_notes_frame.winfo_children():
+            widget.destroy()
 
-    for i, slot_info in enumerate(Main.looping_slot_frames):
-        note_id = Main.looping_note_slots[i]
-        slot_label = slot_info['label']
-        if note_id is not None:
-            note_info = Main.looping_notes[note_id]
-            display_note = f"{note_info['key']} (Oct: {note_info['locked_octave'] if note_info['octave_locked'] else Main.current_octave})"
-            slot_label.config(text=f"Slot {i + 1}: {display_note}")
-        else:
-            slot_label.config(text=f"Slot {i + 1}: Available")
+        # Repopulate the looping notes slots
+        for i, note_id in enumerate(Main.looping_note_slots):
+            slot_frame = tk.Frame(Main.looping_notes_frame, relief='sunken', borderwidth=1)
+            slot_frame.pack(fill='x', pady=5)
+
+            if note_id is not None:
+                note_info = Main.looping_notes[note_id]
+
+                # Display note details
+                tk.Label(slot_frame, text=f"Slot {i + 1}").pack(side='left', padx=10)
+                tk.Label(slot_frame, text=f"Instrument: {os.path.basename(note_info['locked_instrument'])}").pack(side='left', padx=10)
+
+                tk.Button(
+                    slot_frame,
+                    text="Unlock Key and octave",
+                    command=lambda note_id=note_id: Looping.unlock_key_and_octave(note_id)
+                ).pack(side='right', padx=5)
+
+                tk.Button(
+                    slot_frame,
+                    text="Stop",
+                    command=lambda note_id=note_id: Looping.stop_looping(note_id)
+                ).pack(side='right', padx=5)
+
+            else:
+                # Show available slot
+                tk.Label(slot_frame, text=f"Slot {i + 1}: Available").pack(side='left', padx=10)
 
 def start_harp():
     """Start the harp application."""
@@ -204,11 +210,24 @@ def main_menu():
     global root, main_frame, start_button
     root = tk.Tk()
     Main.root = root
-    root.title("Laser Harp Main Menu")
-    root.attributes('-fullscreen', True)
+    Main.root.attributes('-fullscreen', True)
+    Main.root.geometry(f"{Main.root.winfo_screenwidth()}x{Main.root.winfo_screenheight()}")
+    Main.root.bind("<Escape>", lambda e: Main.root.attributes("-fullscreen", False))  # Exit fullscreen with Escape
+
+
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    global padding_x 
+    padding_x = int(screen_width * 0.02)
+    global padding_y 
+    padding_y = int(screen_height * 0.02)
 
     main_frame = tk.Frame(root)
     main_frame.pack(expand=True, fill='both', padx=padding_x, pady=padding_y)
+
+    main_frame.grid_columnconfigure(0, weight=1)
+    main_frame.grid_columnconfigure(1, weight=1)
+    main_frame.grid_columnconfigure(2, weight=1)
 
     octave_buttons()
     volume_slider()
@@ -228,10 +247,19 @@ def main_menu():
     ).pack(side=tk.RIGHT, padx=padding_x)
 
     tk.Button(
-        button_frame,
-        text="Exit",
-        command=root.quit,
-        width=20
+    button_frame,
+    text="Exit",
+    command=lambda: exit_program(),
+    width=20
     ).pack(side=tk.RIGHT, padx=padding_x)
+
+    def exit_program():
+        """Cleanly exit the program."""
+        try:
+            Main.cleanup_gpio()  # Ensure GPIO pins are released
+        except Exception as e:
+            print(f"Error during cleanup: {e}")
+        root.destroy()  # Close the GUI
+        sys.exit()  # Terminate the program
 
     root.mainloop()

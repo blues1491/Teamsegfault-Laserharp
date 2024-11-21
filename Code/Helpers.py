@@ -16,11 +16,26 @@ def transpose_note(note, key, octave, locked_key=None):
         octave_adjustment = 1
     return transposed_note, octave + octave_adjustment
 
-def get_note_identifier(key, octave, instrument=None):
+def get_note_identifier(pin, octave, instrument=None):
     """Generate a unique identifier for a note based on its transposed note, octave, and instrument."""
-    original_note = Main.input_to_note[key]
+    original_note = Main.KEY_PINS[pin]
     transposed_note, adjusted_octave = transpose_note(original_note, Main.current_key, octave)
-    if key == '=':
+    if pin == 5:
         adjusted_octave += 1
     instrument_part = f"_{os.path.basename(instrument)}" if instrument else ""
     return f"{transposed_note}{adjusted_octave}{instrument_part}"
+
+def key_to_index(key):
+    """Convert a musical key (e.g., 'C', 'D#') to its index in Main.keys."""
+    if isinstance(key, int):
+        return key  # Already an index
+    if key in Main.keys:
+        return Main.keys.index(key)
+    raise ValueError(f"Invalid key: {key}")
+
+def note_to_gpio(note):
+    """Map a musical note (e.g., 'C', 'D#') to its GPIO pin."""
+    for pin, note_name in Main.KEY_PINS.items():
+        if note_name == note:
+            return pin
+    raise KeyError(f"Note '{note}' not found in GPIO mapping.")

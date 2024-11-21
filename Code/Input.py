@@ -1,4 +1,5 @@
 import Audio
+import Helpers
 import Looping
 import Main
 
@@ -20,41 +21,34 @@ def handle_key_press(pin):
 
 def handle_key_release(pin):
     """Handle GPIO-based key release."""
-    note = KEY_PINS[pin]
-    if note in Main.input_to_note:
+    note = Main.KEY_PINS[pin]
+    if note in Main.KEY_PINS:
         Main.key_status[note] = False  # Mark the key as released
-        octave = Main.current_octave
-        if note == "C2":  # Handle octave shifts if "C2" is used for this purpose
-            octave += 1
-        note_id = Audio.get_note_identifier(note, octave)
-
         if Main.sustain_option:
-            if note_id in Main.looping_notes:
-                return  # Do not stop looping notes
-            # Cancel scheduled sustain plays
+            # Cancel any scheduled sustain playback
             if note in Main.scheduled_tasks:
                 Main.root.after_cancel(Main.scheduled_tasks[note])
                 del Main.scheduled_tasks[note]
-            # Schedule to stop the sustain sound after sustain_interval
-            task_id = Main.root.after(Main.sustain_interval, lambda: Audio.stop_sustain_sound(note))
-            Main.scheduled_tasks[note] = task_id
+
+            # Stop the sustain sound
+            Audio.stop_sustain_sound(note)
         else:
-            Audio.stop_note_immediately(note)  # Stop the note immediately if sustain is not enabled
+            Audio.stop_note_immediately(note)  # Stop normal playback
 
 def handle_normal_key_press(note_id, note):
     """Handle normal key press logic."""
     if note_id in Main.looping_notes:
         # Stop the looping note if already active
-        Audio.stop_looping_note_by_key(note_id)
+        Looping.stop_looping_note(note_id)
     else:
         if not Main.key_status.get(note, False):  # Avoid duplicate presses
             Main.key_status[note] = True
             if Main.sustain_option:
-                # Play attack sound, then schedule sustain playback
+                # Play attack sound, then trigger sustain loop
                 sounds = Main.sound_objects[note]
                 sounds['attack'].play()
                 attack_length = int(sounds['attack'].get_length() * 1000)
-                Main.root.after(attack_length, lambda: Audio.schedule_sustain_play(note))
+                Main.root.after(attack_length, lambda: Audio.play_sustain_sound(note))
             else:
                 # Play the original sound once
                 sounds = Main.sound_objects[note]
