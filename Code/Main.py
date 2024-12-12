@@ -1,13 +1,6 @@
-# LLMain.py
-
 import lgpio
-import time
-import os
 import pygame
-import Gui
-import Audio
-import Helpers
-import Looping
+import os
 
 # Initialize Pygame mixer
 pygame.mixer.init()
@@ -16,7 +9,7 @@ pygame.mixer.init()
 running = False
 
 # Paths and Folders
-base_folder = "Sound Samples/"
+base_folder = "../Sound Samples/"
 current_folder = os.path.join(base_folder, "Harp")
 instrument_folders = [
     f for f in os.listdir(base_folder) if os.path.isdir(os.path.join(base_folder, f))
@@ -27,21 +20,21 @@ volume = 0.5
 sound_objects = {}
 sustain_lengths = {}
 
-# Key Mappings and Notes
-KEY_PINS = {
-    21: "C",    # GPIO pin 17 -> "C"
-    20: "C#",   # GPIO pin 18 -> "C#"
-    16: "D",    # GPIO pin 27 -> "d"
-    12: "D#",   # GPIO pin 22 -> "D#"
-    25: "E",    # GPIO pin 23 -> "E"
-    24: "F",    # GPIO pin 24 -> "F"
-    23: "F#",   # GPIO pin 25 -> "F#"
-    18: "G",     # GPIO pin 5 -> "G"
-    26: "G#",    # GPIO pin 6 -> "G#"
-    19: "A",    # GPIO pin 12 -> "A"
-    13: "A#",   # GPIO pin 13 -> "A#"
-    6: "B",    # GPIO pin 19 -> "B"
-    5: "C"    # GPIO pin 26 -> "C2"
+# GPIO Mappings and Notes
+gpio_to_note = {
+    17: "C",
+    18: "C#",
+    27: "D",
+    22: "D#",
+    23: "E",
+    24: "F",
+    25: "F#",
+    5: "G",
+    6: "G#",
+    12: "A",
+    13: "A#",
+    19: "B",
+    16: "C"
 }
 keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 current_key = "C"
@@ -50,100 +43,87 @@ current_key = "C"
 octave_range = [2, 3, 4, 5]
 current_octave = 3
 
-# Sustain and Overlap Settings
+# Sustain and GPIO Sustain Settings
 fade_in_duration = 500    # milliseconds
 fade_out_duration = 500   # milliseconds
 attack_duration = 100     # milliseconds
 sustain_interval = 1000   # milliseconds
 sustain_option = False
-max_overlaps = 10
-
-# Looping Notes Settings
-loop_mode = False         # Indicates if loop mode is active
-max_loops = 5            # Maximum number of looping notes
-looping_notes = {}
-looping_note_slots = [None] * max_loops  # Initialize slots based on max_loops
+sustain_gpio_pin = 21  # GPIO pin for sustain toggle
 
 # GUI and Event Handling
 root = None
-advanced_menu_window = None  # Reference to the advanced menu window
 
 # Key Status and Scheduling
-key_status = {pin: False for pin in KEY_PINS}  # Track which keys are active
-last_press_time = {pin: 0 for pin in KEY_PINS}  # For debounce
+key_status = {}
 scheduled_tasks = {}
 
-# Shift Key Timing for Octave Changes
-last_shift_l_time = 0
-last_shift_r_time = 0
-shift_cooldown = 0.2  # 200 milliseconds
-
-# Initialize sustain channel tracking
-active_sustain_channels = {pin: [] for pin in KEY_PINS}
-
-# Add debounce time
-DEBOUNCE_TIME = 0.1  # 100ms
-
-# Initialize GPIO chip
-# Initialize GPIO chip
+# GPIO Initialization
 chip = lgpio.gpiochip_open(0)
+for pin in gpio_to_note.keys():
+    lgpio.gpio_claim_input(chip, pin)
+lgpio.gpio_claim_input(chip, sustain_gpio_pin)
 
-# Ensure pins are claimed only once
-claimed_pins = set()
+def read_gpio_inputs():
+    """Check the state of GPIO pins and play corresponding notes."""
+    global sustain_option
+    for pin, note in gpio_to_note.items():
+        if lgpio.gpio_read(chip, pin) == 1:  # Pin is HIGH
+            if not key_status.get(pin, False):  # If note is not already playing
+                play_note(note)
+                key_status[pin] = True
+        else:  # Pin is LOW
+            if key_status.get(pin, False):  # If note was playing
+                stop_note(note)
+                key_status[pin] = False
 
-for pin in KEY_PINS:
-    if pin not in claimed_pins:
-        try:
-            lgpio.gpio_claim_input(chip, pin)
-            claimed_pins.add(pin)
-            print(f"Claimed GPIO pin: {pin}")
-        except lgpio.error as e:
-            if "GPIO busy" in str(e):
-                print(f"GPIO pin {pin} is already in use. Skipping...")
-            else:
-                raise
+    # Handle sustain toggle
+    sustain_option = lgpio.gpio_read(chip, sustain_gpio_pin) == 1
 
-def handle_key_press(note):
-    """Handle key press logic."""
-    #print(f"Key pressed: {note}")
-    octave = current_octave
-    if KEY_PINS[note] == 5:  # Example for octave change
-        octave += 1
-    note_id = Helpers.get_note_identifier(note, octave)
-
-    if loop_mode:
-        Looping.handle_loop_mode(note_id, note)  # Activate looping logic
-    else:
-        Audio.play_note(note_id, note, sustain_option)  # Play normal sound
-
-def handle_key_release(note):
-    """Handle key release logic."""
-    key_status[note] = False  # Mark key as released
+def play_note(note):
+    """Play a note using the sound object."""
     if sustain_option:
-        Audio.stop_sustain_sound(note)  # Stop sustain if active
+        sounds = sound_objects[note]
+        sounds['attack'].play()
+        attack_length = int(sounds['attack'].get_length() * 1000)
+        root.after(attack_length, lambda: schedule_sustain_play(note))
     else:
-        Audio.stop_note_immediately(note)  # Stop normal playback
+        sounds = sound_objects[note]
+        sounds['original'].play()
 
-def poll_keys():
-    """Poll GPIO pins for state changes."""
-    for pin in claimed_pins:  # Use only successfully claimed pins
-        try:
-            pin_state = lgpio.gpio_read(chip, pin)
-            if pin_state == 1:  # Detect key press
-                handle_key_press(pin)
-            elif pin_state == 0:  # Detect key release
-                handle_key_release(pin)
-        except lgpio.error as e:
-            print(f"Error reading GPIO pin {pin}: {e}")
+def stop_note(note):
+    """Stop playing a note."""
+    if sustain_option:
+        if note in scheduled_tasks:
+            root.after_cancel(scheduled_tasks[note])
+            del scheduled_tasks[note]
 
-def cleanup_gpio():
-    """Release GPIO pins on exit."""
-    for pin in claimed_pins:
-        try:
-            lgpio.gpio_free(chip, pin)
-        except lgpio.error as e:
-            print(f"Error releasing GPIO pin {pin}: {e}")
-    lgpio.gpiochip_close(chip)
+def schedule_sustain_play(note):
+    """Schedule the sustain sound to play."""
+    if key_status.get(note, False):  # Only if the note is still active
+        sounds = sound_objects[note]
+        sounds['sustain'].play()
 
+def start_harp():
+    """Start the harp application."""
+    global running
+    running = True
+    preload_sounds()
+    while running:
+        read_gpio_inputs()
+
+def stop_harp():
+    """Stop the harp application."""
+    global running
+    running = False
+    pygame.mixer.stop()
+
+def preload_sounds():
+    """Preload sounds for the current instrument."""
+    # Logic for preloading sounds based on current folder and settings.
+
+# Debounce handling can be added if needed for noisy GPIO pins.
+
+# Start the main program loop if this file is executed directly.
 if __name__ == "__main__":
-    Gui.main_menu()  # Launch the GUI
+    start_harp()

@@ -57,7 +57,7 @@ max_overlaps = 10
 
 # Looping Notes Settings
 loop_mode = False         # Indicates if loop mode is active
-max_loops = 13             # Maximum number of looping notes
+max_loops = 10             # Maximum number of looping notes
 looping_notes = {}
 looping_note_slots = [None] * max_loops  # Initialize slots based on max_loops
 
